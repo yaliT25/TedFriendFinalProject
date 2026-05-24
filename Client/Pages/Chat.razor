@@ -1,0 +1,521 @@
+@page "/Chat"
+@using BlazorGoogleLogin.Shared.DTOs
+@using System.Text.Json
+@using BlazorGoogleLogin.Client.Services
+@inject HttpClient Http
+@inject SessionState State
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>@(State.Topic ?? "TED Practice")</PageTitle>
+
+<div class="chat-page">
+
+    <main class="chat-main">
+
+        <img src="images/logo_black-removebg-preview%20(1).png"
+             class="chat-logo"
+             alt="TED Friend Logo" />
+
+        <section class="chat-messages" id="chatContainer">
+
+            @foreach (var message in Messages)
+            {
+            if (message.role == "assistant")
+            {
+            <article class="chat-row ai-row">
+                <img src="images/chatmasscot.png"
+                     class="chat-avatar ai-avatar"
+                     alt="אייקון של רובוט עם מיקרופון" />
+
+                <div class="message-stack">
+                    <div class="message-bubble ai-bubble">
+                        <p>@message.content</p>
+
+                        @if (!string.IsNullOrEmpty(message.translatedContent))
+                        {
+                        <div class="translation-divider"></div>
+
+                        <div class="translation-text" dir="rtl">
+                            @message.translatedContent
+                        </div>
+                        }
+                    </div>
+
+                    <div class="message-actions">
+                        <button class="message-action-button"
+                                @onclick="() => PlayAssistantMessage(message.content)"
+                                title="Listen to Ted Friend"
+                                aria-label="האזנה">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="19" viewBox="0 0 17 19" fill="none">
+                                <path d="M15.75 7.63221C17.0833 8.40201 17.0833 10.3265 15.75 11.0963L3 18.4575C1.66667 19.2273 9.71889e-07 18.2651 1.03919e-06 16.7255L1.68273e-06 2.00304C1.75002e-06 0.463441 1.66667 -0.49881 3 0.270991L15.75 7.63221Z" fill="#3A237D"/>
+                            </svg>
+                        </button>
+
+                        <button class="message-action-button"
+                                @onclick="() => TranslateMessage(message)"
+                                title="Translate to Hebrew"
+                                aria-label="תרגום">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="29" height="29" viewBox="0 0 29 29" fill="none">
+                                <g clip-path="url(#clip_translate_icon)">
+                                    <path d="M29 14.4998V14.4925C29 10.2018 27.1319 6.34838 24.1655 3.6985L24.151 3.68642C24.1143 3.64695 24.0734 3.61169 24.0289 3.58129L24.0265 3.58008C21.3917 1.26706 18.0036 -0.0054975 14.4976 0.00100133C10.8339 0.00100133 7.48925 1.36158 4.93967 3.60667L4.95538 3.59338C4.92474 3.6168 4.89642 3.6431 4.8708 3.67192C3.33812 5.02916 2.1113 6.69776 1.27159 8.56486C0.43188 10.432 -0.00155076 12.4562 4.16891e-06 14.5034C4.16891e-06 18.793 1.86567 22.6464 4.82971 25.2975L4.84421 25.3095C4.88277 25.3529 4.92569 25.3922 4.9723 25.4267L4.97471 25.428C7.60868 27.7379 10.9942 29.0086 14.4976 29.0022C18.0173 29.0076 21.4174 27.7251 24.0567 25.3965L24.041 25.4098C25.6003 24.0542 26.8502 22.3794 27.7062 20.4988C28.5622 18.6182 29.0042 16.5757 29.0024 14.5095V14.501L29 14.4998ZM23.6084 23.9308C22.8899 23.3502 22.1174 22.8396 21.3017 22.4059L21.2232 22.3672C21.9639 20.2321 22.4098 17.7708 22.452 15.2103V15.191H27.6008C27.4276 18.5036 26.0017 21.6266 23.612 23.9272L23.6084 23.9308ZM15.1912 22.1123C16.7415 22.1957 18.1903 22.5364 19.5267 23.091L19.4397 23.0596C18.3691 25.5005 16.8623 27.1776 15.1912 27.5462V22.1123ZM15.1912 20.73V15.191H21.0733C21.0265 17.4847 20.6288 19.7577 19.894 21.931L19.9411 21.7727C18.4412 21.1553 16.8455 20.8029 15.225 20.7312L15.1924 20.73H15.1912ZM15.1912 13.8086V8.26963C16.8553 8.19392 18.4936 7.82963 20.033 7.193L19.9375 7.22804C20.6081 9.18433 21.0202 11.4391 21.0733 13.7832V13.8086H15.1912ZM15.1912 6.88729V1.45583C16.8623 1.82438 18.3691 3.49429 19.4397 5.94238C18.1903 6.46196 16.7415 6.8015 15.2262 6.88608L15.1912 6.88729ZM18.6398 2.05396C20.064 2.52797 21.3958 3.24414 22.5765 4.17096L22.5487 4.14921C22.0134 4.56971 21.4129 4.96604 20.7797 5.31042L20.712 5.34425C20.2017 4.1361 19.4981 3.01909 18.6289 2.03704L18.6398 2.05033V2.05396ZM13.8064 1.45946V6.88729C12.3159 6.81135 10.8495 6.4803 9.47092 5.90854L9.55792 5.93996C10.6333 3.49913 12.1377 1.82317 13.8088 1.45463L13.8064 1.45946ZM8.28675 5.34063C7.63192 4.98794 7.00784 4.58092 6.42109 4.12383L6.45009 4.14558C7.5964 3.24592 8.88655 2.54651 10.266 2.07692L10.3578 2.04913C9.51218 3.0052 8.82335 4.08922 8.31696 5.26088L8.28675 5.34063ZM13.8088 8.26842V13.8074H7.92667C7.97984 11.4379 8.39188 9.18313 9.10963 7.06854L9.0625 7.22683C10.5625 7.84129 12.157 8.19321 13.7762 8.26721L13.8088 8.26842ZM13.8088 15.1898V20.7288C12.1447 20.8045 10.5064 21.1687 8.96705 21.8054L9.0625 21.7703C8.39188 19.8152 7.97984 17.5593 7.92667 15.2151V15.1898H13.8088ZM13.8088 22.1111V27.5425C12.1377 27.174 10.6309 25.5041 9.56034 23.056C10.8098 22.5364 12.2585 22.1981 13.7738 22.1135L13.8088 22.1111ZM10.3651 26.9444C8.94213 26.4697 7.61073 25.7554 6.42834 24.8322L6.45734 24.854C6.99263 24.4335 7.59317 24.0372 8.22634 23.6928L8.294 23.659C8.80051 24.8673 9.50406 25.9833 10.376 26.9613L10.3651 26.9492V26.9444ZM20.7133 23.6577C21.4141 24.0384 22.0146 24.4335 22.5789 24.8745L22.5499 24.8528C21.4036 25.7525 20.1135 26.4519 18.734 26.9215L18.6422 26.9492C19.4877 25.9935 20.1765 24.9099 20.683 23.7387L20.7133 23.6602V23.6577ZM27.6008 13.8086H22.452C22.4143 11.3086 21.9828 8.83013 21.1736 6.46438L21.2232 6.63113C22.0767 6.18159 22.8848 5.65068 23.6362 5.04579L23.6072 5.06754C25.9929 7.35886 27.4194 10.4706 27.5983 13.7736L27.6008 13.8086ZM5.39159 5.06875C6.08759 5.63425 6.86938 6.15263 7.6983 6.59367L7.77684 6.63233C7.03613 8.76746 6.59025 11.2288 6.54796 13.7893V13.8086H1.39805C1.5712 10.496 2.99705 7.37301 5.38675 5.07238L5.39159 5.06875ZM1.39925 15.191H6.54796C6.58575 17.691 7.01718 20.1695 7.82638 22.5352L7.77684 22.3685C6.86938 22.8506 6.0888 23.369 5.3638 23.9538L5.3928 23.932C3.00713 21.6407 1.5806 18.529 1.40167 15.226L1.40046 15.1922L1.39925 15.191Z" fill="#3A237D"/>
+                                </g>
+                                <defs>
+                                    <clipPath id="clip_translate_icon">
+                                        <rect width="29" height="29" fill="white"/>
+                                    </clipPath>
+                                </defs>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </article>
+            }
+            else
+            {
+            <article class="chat-row student-row">
+                <img src="images/studentChatICON.png"
+                     class="chat-avatar student-avatar"
+                     alt="אייקון של תלמיד או תלמידה" />
+
+                <div class="message-bubble student-bubble">
+                    <p>@message.content</p>
+                </div>
+            </article>
+            }
+            }
+
+            @if (isTyping)
+            {
+            <article class="chat-row ai-row">
+                <img src="images/chatmasscot.png"
+                     class="chat-avatar ai-avatar"
+                     alt=" אייקון של רובוט עם מיקרופון" />
+
+                <div class="message-bubble ai-bubble typing-bubble">
+                    <p>Hmm... let me think! 💭</p>
+                </div>
+            </article>
+            }
+
+        </section>
+
+        <footer class="chat-input-area">
+            @if (State.CurrentPhase != 5)
+            {
+            <div class="chat-input-box">
+                <input @bind="userMessage"
+                       @bind:event="oninput"
+                       @onkeydown="HandleKeyDown"
+                       class="chat-text-input"
+                       placeholder="Type here..."
+                       disabled="@isTyping" />
+
+                <button @onclick="() => SendMessage()"
+                        class="chat-send-button"
+                        disabled="@(string.IsNullOrWhiteSpace(userMessage) || isTyping)"
+                        aria-label="שליחה">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="33" viewBox="0 0 34 33" fill="none">
+                        <path opacity="0.9" d="M2.68043 16.1221L1.52561 5.74656C1.19484 2.77721 4.25778 0.595988 6.96319 1.87648L29.7995 12.6738C32.7153 14.0516 32.7153 18.1927 29.7995 19.5705L6.96319 30.3697C4.25778 31.6483 1.19484 29.469 1.52561 26.4996L2.68043 16.1221ZM2.68043 16.1221H16.0641" stroke="#513996" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            }
+            else
+            {
+            <div class="voice-practice-control">
+
+                <button class="voice-practice-button @(isRecording ? "recording" : "")"
+                        @onclick="StartVoiceRecognition"
+                        aria-label="@(isRecording ? "עצירת הקלטה" : "התחלת הקלטה")">
+
+                    @if (isRecording)
+                    {
+                    <img src="images/speakerICON.png"
+                         class="voice-button-icon"
+                         alt="אייקון רמקול" />
+                    }
+                    else
+                    {
+                    <img src="images/microphone1ICON.png"
+                         class="voice-button-icon"
+                         alt="אייקון מיקרופון" />
+                    }
+
+                </button>
+
+                <p class="voice-practice-instruction">
+                    @if (isRecording)
+                    {
+                    <span>שחררו כדי להעביר את קטע הקול</span>
+                    }
+                    else
+                    {
+                    <span>לחצו על המיקרופון כדי לדבר</span>
+                    }
+                </p>
+
+            </div>
+            }
+        </footer>
+
+    </main>
+
+    <aside class="chat-sidebar" dir="rtl">
+
+        <button class="chat-exit-button"
+                @onclick="HandleLogout"
+                aria-label="שמירה וחזרה למסך הראשי">
+            <img src="images/leaveICON.png"
+                 alt="אייקון של חצי ריבוע וחץ שיוצא מכיוונו ומצביע על הכיוון הנגדי" />
+        </button>
+
+        <div class="chat-topic-header">
+            <span>המצגת שלי</span>
+            <h2>@(State.Topic ?? "טוען...")</h2>
+        </div>
+
+        <nav class="chat-phase-nav" aria-label="שלבי אימון">
+
+            <button class="phase-card @(State.CurrentPhase == 2 ? "active" : "")"
+                    @onclick="() => ChangePhase(2)">
+                <span class="phase-icon phase-play-icon"></span>
+
+                <span class="phase-copy">
+                    <strong>פתיחה</strong>
+                    <small>לחצו כאן כדי לעבוד על הפתיחה של הפרזנטציה</small>
+                </span>
+            </button>
+
+            <button class="phase-card @(State.CurrentPhase == 3 ? "active" : "")"
+                    @onclick="() => ChangePhase(3)">
+                <span class="phase-icon phase-body-icon"></span>
+
+                <span class="phase-copy">
+                    <strong>גוף</strong>
+                    <small>לחצו כאן כדי לעבוד על הגוף של הפרזנטציה ועל הטיעונים המרכזיים</small>
+                </span>
+            </button>
+
+            <button class="phase-card @(State.CurrentPhase == 4 ? "active" : "")"
+                    @onclick="() => ChangePhase(4)">
+                <span class="phase-icon phase-end-icon"></span>
+
+                <span class="phase-copy">
+                    <strong>סיום</strong>
+                    <small>לחצו כאן כדי לעבוד על סיום הפרזנטציה</small>
+                </span>
+            </button>
+
+            <button class="phase-card @(State.CurrentPhase == 5 ? "active" : "")"
+                    @onclick="() => ChangePhase(5)">
+                <span class="phase-icon phase-voice-icon"></span>
+
+                <span class="phase-copy">
+                    <strong>תרגול קולי</strong>
+                    <small>לחצו כאן כדי להתאמן בהעברת הפרזנטציה</small>
+                </span>
+            </button>
+
+        </nav>
+
+        <button class="finish-summary-button"
+                @onclick="FinishSession"
+                disabled="@isProcessing">
+            @if (isProcessing)
+            {
+            <span>מעבד...</span>
+            }
+            else
+            {
+            <span>סיום וסיכום</span>
+            }
+        </button>
+
+    </aside>
+
+</div>
+
+@code {
+    private Dictionary<int, List<Message>> phaseHistories = new();
+    private List<Message> Messages => GetCurrentPhaseMessages(); //רשימת הודעות מהשלב
+    private string userMessage = "";
+    private bool isTyping = false; //משתנה בוליאני להקלדה
+    private bool isRecording = false; //משתנה בוליאני להקלטה
+
+    // --- אתחול הדף ---
+    protected override async Task OnInitializedAsync()
+    {
+        if (State.SelectedSessionId == 0)
+        {
+            Navigation.NavigateTo("/StudentDashboard");
+            return;
+        }
+
+        try 
+        {
+            // 1. שליפה מהשרת
+            var session = await Http.GetFromJsonAsync<ChatSessionDTO>($"api/GPT/GetSessionForChat/{State.SelectedSessionId}");
+
+            if (session != null)
+            {
+                if (!string.IsNullOrEmpty(session.Topic))
+                {
+                    State.Topic = session.Topic;
+                }
+                State.CurrentPhase = session.CurrentPhase ?? 2;
+            }
+        }
+        catch (Exception ex) 
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        await InitializePhaseChat();
+    }
+
+    private List<Message> GetCurrentPhaseMessages()
+    {
+        if (!phaseHistories.ContainsKey(State.CurrentPhase))
+        {
+            phaseHistories[State.CurrentPhase] = new List<Message>();
+        }
+        return phaseHistories[State.CurrentPhase];
+    }
+
+    private async Task InitializePhaseChat()
+    {
+        if (Messages.Any()) return;
+
+        string topic = State.Topic ?? "your TED Talk";
+        int currentPhase = State.CurrentPhase;
+
+        string greetingMessage = currentPhase switch
+        {
+            2 => $"Hi! I’m your TED friend 😊 My job is to help you build your TED Talk. Your topic '{topic}' is amazing! First, say hello and tell the class your name. Then we’ll create a strong opening with a question, a fun fact, or a short story.",
+            3 => "Great job so far! 👏 Now let’s build the main part of your talk. We need 2 main ideas. Do you already have one idea we can start with?",
+            4 => "Nice work! 🌟 Now let’s write a strong ending together. We want a short message people will remember. What do you want your audience to learn from you?",
+            5 => "Time to practice speaking! 🎤 I’m listening. Take a deep breath, and start speaking when you’re ready.",
+            _ => "Hi! I’m here to help you with your TED Talk 😊"
+        };
+
+        Messages.Add(new Message { role = "assistant", content = greetingMessage });
+        StateHasChanged();
+    }
+
+    private async Task ChangePhase(int newPhase)
+    {
+        if (State.CurrentPhase == newPhase) return;
+        State.CurrentPhase = newPhase;
+        await Http.PostAsync($"api/GPT/UpdatePhase/{State.SelectedSessionId}/{newPhase}", null);
+        await InitializePhaseChat();
+        StateHasChanged();
+        await ScrollToBottom();
+    }
+
+    private async Task SendMessage(string? incomingText = null)
+    {
+        var content = incomingText ?? userMessage;
+        if (string.IsNullOrWhiteSpace(content)) return;
+
+        if (incomingText == null) userMessage = ""; 
+    
+        // 1. הוספת הודעת המשתמש לרשימה
+        Messages.Add(new Message { role = "user", content = content });
+    
+        // 2. הפעלת מצב "בדיקה"
+        isTyping = true;
+
+        
+        // עדכון המסך לפני הפנייה ל-API
+        StateHasChanged(); 
+        await ScrollToBottom();
+
+        var request = new ChatRequest
+        {
+            DocumentContent = State.DocumentContext,
+            History = Messages
+        };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync($"api/GPT/Chat/{State.SelectedSessionId}", request);
+            if (response.IsSuccessStatusCode)
+            {
+                var reply = await response.Content.ReadAsStringAsync();
+                Messages.Add(new Message { role = "assistant", content = reply });
+                // עדכון סופי כשהתשובה מגיעה
+                await ScrollToBottom();
+            }
+        }
+        finally
+        {
+            isTyping = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task StartVoiceRecognition()
+    {
+        if (!isRecording)
+        {
+            await JS.InvokeVoidAsync("startRecording");
+            isRecording = true;
+        }
+        else
+        {
+            isRecording = false;
+            var base64Audio = await JS.InvokeAsync<string>("stopRecording");
+            await UploadAudio(base64Audio);
+        }
+    }
+
+    private async Task UploadAudio(string base64Audio)
+    {
+        try 
+        {
+            var audioBytes = Convert.FromBase64String(base64Audio);
+            var content = new MultipartFormDataContent();
+            var fileContent = new ByteArrayContent(audioBytes);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/webm");
+        
+            content.Add(fileContent, "audioFile", "audio.webm");
+
+            var response = await Http.PostAsync("api/Speech/transcribe", content);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<WhisperResponse>();
+                if (result != null && !string.IsNullOrEmpty(result.text))
+                {
+                    await SendMessage(result.text); 
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error uploading audio: {ex.Message}");
+        }
+    }
+    
+    private async Task PlayAssistantMessage(string text)
+    {
+        // הגנה ראשונה: אם אין טקסט, אין טעם לפנות לשרת
+        if (string.IsNullOrWhiteSpace(text)) return;
+
+        try 
+        {
+            var request = new { Text = text };
+            var response = await Http.PostAsJsonAsync("api/Speech/speak", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // קריאת האודיו והעברה ל-JS
+                var audioBytes = await response.Content.ReadAsByteArrayAsync();
+                var base64Audio = Convert.ToBase64String(audioBytes);
+                await JS.InvokeVoidAsync("playBase64Audio", base64Audio);
+            }
+            else
+            {
+                // אם יש שגיאה, רק נדפיס את הקוד שלה (למשל 400 או 500) בלי לנסות לקרוא את התוכן
+                Console.WriteLine($"TTS Server Error: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // הגנה מפני קריסה במקרה של בעיית רשת
+            Console.WriteLine($"Client Error: {ex.Message}");
+        }
+    }
+    
+    private bool isProcessing = false;
+
+    private async Task FinishSession()
+    {
+        if (isProcessing) return; // הגנה מפני לחיצות כפולות
+
+        // 1. עדכון ויזואלי של הכפתור בלבד
+        isProcessing = true;
+        StateHasChanged(); 
+    
+        try
+        {
+            // 2. עדכון השרת בלבד
+            await Http.PostAsync($"api/GPT/UpdatePhase/{State.SelectedSessionId}/6", null);
+            var response = await Http.PostAsync($"api/GPT/GenerateFinalSummary/{State.SelectedSessionId}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // 3. ניווט 
+                Navigation.NavigateTo($"/FeedbackStudent/{State.SelectedSessionId}");
+            }
+            else
+            {
+                Console.WriteLine("Error: Failed to generate summary.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+        finally
+        {
+            // בסוף התהליך (או במקרה של שגיאה) נחזיר את הכפתור למצבו הרגיל
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        var fullHistoryJson = JsonSerializer.Serialize(phaseHistories);
+        var updateModel = new SaveProgressRequest { 
+            History = fullHistoryJson, 
+            CurrentPhase = State.CurrentPhase 
+        };
+    
+        await Http.PostAsJsonAsync($"api/GPT/SaveFullProgress/{State.SelectedSessionId}", updateModel);
+    
+        State.SelectedSessionId = 0;
+        Navigation.NavigateTo("/StudentDashboard");
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(userMessage) && !isTyping)
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task ScrollToBottom()
+    {
+        await Task.Delay(100);
+        await JS.InvokeVoidAsync("scrollToEnd", "chatContainer");
+    }
+    
+    private async Task TranslateMessage(Message msg)
+    {
+        // אם כבר תרגמנו את ההודעה הזו בעבר, אין טעם לפנות שוב לשרת
+        if (!string.IsNullOrEmpty(msg.translatedContent)) return;
+
+        try
+        {
+            // קריאה ל-Endpoint החדש ב-GPTController
+            var response = await Http.PostAsJsonAsync("api/GPT/Translate", new { text = msg.content });
+        
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+            
+                // שמירת התרגום בתוך אובייקט ההודעה
+                msg.translatedContent = result.GetProperty("translation").GetString();
+            
+                // עדכון ה-UI
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Translation error: {ex.Message}");
+        }
+    }
+}

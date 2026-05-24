@@ -1,0 +1,264 @@
+@page "/FeedbackStudent/{SessionId:int}"
+@using System.Text.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject BlazorGoogleLogin.Client.Services.SessionState State
+
+<div class="feedback-page" dir="rtl">
+
+    <button class="feedback-back-button"
+            @onclick="GoBackToPractice"
+            aria-label="חזרה לתרגול">
+        <img src="images/leaveICON.png" alt="סמל של חצי ריבוע ממנוע יוצא חץ בכיוון הנגדי" />
+        <span>חזרה לתרגול</span>
+    </button>
+
+    <main class="feedback-content">
+
+        <img src="images/logo_black-removebg-preview%20(1).png"
+             class="feedback-logo"
+             alt="Classi Logo" />
+
+        @if (summaryData == null)
+        {
+        <section class="feedback-loading-card">
+            <div class="feedback-loader"></div>
+            <p>נתוני הסיכום נטענים...</p>
+        </section>
+        }
+        else
+        {
+        var grammarScore = summaryData.AiAnalysisJson == null ? 0 : summaryData.GrammarScore;
+        var fluencyScore = summaryData.AiAnalysisJson == null ? 0 : summaryData.FluencyScore;
+
+        <section class="feedback-scores-grid" aria-label="ציוני התרגול">
+
+            <article class="score-card">
+                <h2>ציון דקדוק</h2>
+                <p class="score-subtitle">Grammar</p>
+
+                <div class="score-number">@grammarScore</div>
+
+                <div class="score-dots" aria-label="ציון דקדוק @grammarScore מתוך 10">
+                    @for (var dot = 1; dot <= 10; dot++)
+                    {
+                    <span class="score-dot @(dot <= grammarScore ? "active" : "")"></span>
+                    }
+                </div>
+            </article>
+
+            <article class="score-card">
+                <h2>ציון שטף דיבור</h2>
+                <p class="score-subtitle">Fluency</p>
+
+                <div class="score-number">@fluencyScore</div>
+
+                <div class="score-dots" aria-label="ציון שטף דיבור @fluencyScore מתוך 10">
+                    @for (var dot = 1; dot <= 10; dot++)
+                    {
+                    <span class="score-dot @(dot <= fluencyScore ? "active" : "")"></span>
+                    }
+                </div>
+            </article>
+
+        </section>
+
+        <section class="feedback-bottom-grid">
+
+            <article class="tips-panel">
+
+                <img src="images/pickupmasscot.png"
+                     class="tips-mascot"
+                     alt="הדמות המלווה של המערכת, רובוט עם רמקול מציץ וקורץ" />
+
+                <header class="tips-header">
+                    <img src="images/tipICON.png" alt="אייקון של נורה" />
+                    <h2>טיפים מ - TED Friend</h2>
+                </header>
+
+                @if (summaryData.FluencyScore <= 0 || string.IsNullOrEmpty(summaryData.AiAnalysisJson))
+                {
+                <div class="no-feedback-box">
+                    <p>כדי לקבל משוב, צריך קודם לדבר עם Ted Friend</p>
+
+                    <button type="button"
+                            class="practice-return-button"
+                            @onclick="GoBackToPractice">
+                        חזרה לתרגול עם ה-AI
+                    </button>
+                </div>
+                }
+                else
+                {
+                <div class="advice-list">
+
+                    <section class="advice-box">
+                        <div class="advice-text">
+                            <h3>נקודה לשימור</h3>
+                            <p>@advice?.Keep</p>
+                        </div>
+
+                        <img src="images/like.png"
+                             class="advice-side-icon"
+                             alt="אייקון של לייק, האגודל מופנית כלפי מעלה" />
+                    </section>
+
+                    <section class="advice-box">
+                        <div class="advice-text">
+                            <h3>נקודה לשיפור</h3>
+                            <p>@advice?.Improve</p>
+                        </div>
+
+                        <img src="images/dislike.png"
+                             class="advice-side-icon"
+                             alt="אייקון של דיסלייק, האגודל מופנית כלפי מטה" />
+                    </section>
+
+                </div>
+                }
+
+            </article>
+
+            <article class="teacher-help-panel">
+
+                <h2>האם את/ה זקוק/ה לעזרה נוספת?</h2>
+
+                <div class="rating-options" role="group" aria-label="בחירת צורך בעזרה נוספת">
+
+                    <button type="button"
+                            class="rating-option @(studentRating == 3 ? "selected" : "")"
+                            @onclick="() => SelectRating(3)">
+                        <img src="images/YESICON.png" alt="אייקון של סמיילי עצוב" />
+                        <span>כן</span>
+                    </button>
+
+                    <button type="button"
+                            class="rating-option @(studentRating == 2 ? "selected" : "")"
+                            @onclick="() => SelectRating(2)">
+                        <img src="images/LITTLEICON.png" alt="אייקון של סמיילי ניטרלי" />
+                        <span>קצת</span>
+                    </button>
+
+                    <button type="button"
+                            class="rating-option @(studentRating == 1 ? "selected" : "")"
+                            @onclick="() => SelectRating(1)">
+                        <img src="images/NOICON.png" alt="אייקון של סמיילי מחייך" />
+                        <span>לא</span>
+                    </button>
+
+                </div>
+
+                <textarea class="teacher-comment-input"
+                          placeholder="האם יש דברים נוספים שתרצו להעביר למורה?"
+                          @bind="studentComment"></textarea>
+
+            </article>
+
+        </section>
+
+        <button class="final-save-button"
+                @onclick="SubmitFinalFeedback"
+                disabled="@(isSubmitting || studentRating == 0)">
+
+            @if (isSubmitting)
+            {
+            <span>שומר נתונים...</span>
+            }
+            else
+            {
+            <span>שמירה וחזרה למסך הראשי</span>
+            <img src="images/finaleSave.png" alt="אייקון של הסמל המקובל לשמירת קובץ" />
+            }
+
+        </button>
+
+        @if (studentRating == 0)
+        {
+        <p class="feedback-required-message">
+            כדי להמשיך, סמנו אם יש צורך בעזרה נוספת מהמורה
+        </p>
+        }
+        }
+
+    </main>
+
+</div>
+
+@code {
+    [Parameter] public int SessionId { get; set; }
+    
+    private bool isSubmitting = false;
+    private ChatSessionDTO summaryData;
+    private AiAnalysisData advice;
+    private int studentRating = 0; 
+    private string studentComment = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            summaryData = await Http.GetFromJsonAsync<ChatSessionDTO>($"api/GPT/GetFeedback/{SessionId}");
+            if (summaryData != null && !string.IsNullOrEmpty(summaryData.AiAnalysisJson))
+            {
+                advice = JsonSerializer.Deserialize<AiAnalysisData>(summaryData.AiAnalysisJson, 
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading feedback: {ex.Message}");
+        }
+    }
+
+    private void SelectRating(int val)
+    {
+        studentRating = val;
+    }
+
+    // פונקציה לחזרה לתרגול - מעדכנת את השלב חזרה ל-5
+    private async Task GoBackToPractice()
+    {
+        try
+        {
+            State.SelectedSessionId = SessionId;
+
+            // 2. עדכון ה-Phase בשרת ל-5 (לפי הנתיב שמופיע אצלך בקוד של הצ'אט)
+            await Http.PostAsync($"api/GPT/UpdatePhase/{SessionId}/5", null);
+        
+            // 3. ניווט לכתובת המדויקת של עמוד הצ'אט כפי שמופיעה ב-@page שלו
+            Navigation.NavigateTo("/Chat");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error returning to practice: {ex.Message}");
+        }
+    }
+
+    private async Task SubmitFinalFeedback()
+    {
+        if (studentRating == 0) return;
+        isSubmitting = true;
+        
+        var feedbackDto = new StudentFeedbackDTO 
+        { 
+            Rating = studentRating, 
+            Comment = studentComment 
+        };
+
+        // שליחת המשוב לקונטרולר (שם השאילתה מעדכנת כעת גם ל-Phase 7)
+        var response = await Http.PostAsJsonAsync($"api/GPT/SaveStudentFeedback/{SessionId}", feedbackDto);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/StudentDashboard"); 
+        }
+        
+        isSubmitting = false;
+    }
+
+    public class AiAnalysisData 
+    { 
+        public string Keep { get; set; } 
+        public string Improve { get; set; } 
+    }
+}

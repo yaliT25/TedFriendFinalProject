@@ -1,0 +1,1120 @@
+/* ===== Student Dashboard Page ===== */
+
+.student-dashboard-page {
+    --dashboard-scale: 3;
+
+    position: relative;
+    width: 100%;
+    min-height: 100svh;
+    overflow: auto;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+
+    background-image: url("images/AppBackground.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    box-sizing: border-box;
+    padding: 0;
+}
+
+.student-dashboard-page *,
+.student-dashboard-page *::before,
+.student-dashboard-page *::after {
+    box-sizing: border-box;
+}
+
+/* ===== Logo + Exit ===== */
+
+.dashboard-logo {
+    position: absolute;
+    top: calc(0.6rem * var(--dashboard-scale));
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: calc(14rem * var(--dashboard-scale));
+    height: auto;
+    object-fit: contain;
+
+    z-index: 3;
+}
+
+.dashboard-exit-button {
+    position: absolute;
+    top: calc(1.1rem * var(--dashboard-scale));
+    right: calc(1.2rem * var(--dashboard-scale));
+
+    width: calc(1.6rem * var(--dashboard-scale));
+    height: calc(1.6rem * var(--dashboard-scale));
+
+    border: none;
+    background: transparent;
+    padding: 0;
+
+    cursor: pointer;
+    z-index: 4;
+}
+
+.dashboard-exit-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* ===== Main Layout ===== */
+
+.dashboard-layout {
+    display: grid;
+
+    grid-template-columns:
+        calc(38.625rem * var(--dashboard-scale))
+        calc(59rem * var(--dashboard-scale));
+
+    grid-template-areas: "side sessions";
+
+    align-items: stretch;
+    justify-content: center;
+
+    gap: calc(2.5rem * var(--dashboard-scale));
+    width: max-content;
+    margin-top: calc(10rem * var(--dashboard-scale));
+}
+
+/* ===== Left Side Panel ===== */
+
+.dashboard-side-panel {
+    grid-area: side;
+
+    width: calc(38.625rem * var(--dashboard-scale));
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.student-greeting {
+    margin: 0 0 calc(1.25rem * var(--dashboard-scale));
+}
+
+.student-greeting h1 {
+    color: #2F2F2F;
+    text-align: left;
+    font-family: 'Acme', sans-serif;
+    font-size: calc(2.4rem * var(--dashboard-scale));
+    font-style: normal;
+    font-weight: 400;
+    line-height: 126.644%;
+    margin: 0;
+}
+
+/* ===== New Practice Card ===== */
+
+.new-practice-card {
+    position: relative;
+
+    width: calc(38.625rem * var(--dashboard-scale));
+    height: calc(20.50025rem * var(--dashboard-scale));
+    overflow: hidden;
+
+    border-radius: calc(2.9375rem * var(--dashboard-scale));
+    background: rgba(40, 73, 139, 0.75);
+    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.20);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: calc(2rem * var(--dashboard-scale));
+    margin-block-end: calc(1.5rem * var(--dashboard-scale));
+}
+
+.card-corner-blur {
+    position: absolute;
+    top: calc(-5.25rem * var(--dashboard-scale));
+    right: calc(-5.25rem * var(--dashboard-scale));
+
+    width: calc(10.90919rem * var(--dashboard-scale));
+    height: calc(10.90919rem * var(--dashboard-scale));
+
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+
+    pointer-events: none;
+}
+
+.new-practice-button {
+    width: calc(8.5rem * var(--dashboard-scale));
+    height: calc(8.85rem * var(--dashboard-scale));
+
+    border-radius: calc(2rem * var(--dashboard-scale));
+    border: calc(0.3125rem * var(--dashboard-scale)) solid #FFF;
+    background: #513996;
+    box-shadow: 0 4px 1.4px rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.new-practice-icon {
+    width: 58%;
+    height: 58%;
+    object-fit: contain;
+    display: block;
+}
+
+.new-practice-card h2 {
+    color: #FFF;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(2.2rem * var(--dashboard-scale));
+    font-style: normal;
+    font-weight: 600;
+    line-height: 121.042%;
+    margin: calc(1.1rem * var(--dashboard-scale)) 0 calc(0.5rem * var(--dashboard-scale));
+}
+
+.new-practice-card p {
+    color: #FFF;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(1.35rem * var(--dashboard-scale));
+    font-style: normal;
+    font-weight: 400;
+    line-height: 121.042%;
+    margin: 0;
+}
+
+/* ===== Tip Area + Mascot ===== */
+
+.tip-area {
+    position: relative;
+    width: calc(38.5rem * var(--dashboard-scale));
+}
+
+.tip-card {
+    position: relative;
+
+    width: calc(38.5rem * var(--dashboard-scale));
+    min-height: calc(28.0625rem * var(--dashboard-scale));
+    overflow: hidden;
+
+    border-radius: calc(2.9375rem * var(--dashboard-scale));
+    background: rgba(255, 205, 90, 0.85);
+    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.20);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding:
+            calc(2.25rem * var(--dashboard-scale))
+            calc(2.5rem * var(--dashboard-scale))
+            calc(2.5rem * var(--dashboard-scale));
+}
+
+.tip-corner-blur {
+    position: absolute;
+    top: calc(-5.25rem * var(--dashboard-scale));
+    right: calc(-5.25rem * var(--dashboard-scale));
+
+    width: calc(10.90919rem * var(--dashboard-scale));
+    height: calc(10.90919rem * var(--dashboard-scale));
+
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.10);
+
+    pointer-events: none;
+}
+
+.tip-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(0.75rem * var(--dashboard-scale));
+
+    margin-block-end: calc(1.5rem * var(--dashboard-scale));
+}
+
+.tip-icon {
+    font-size: calc(2.4rem * var(--dashboard-scale));
+    line-height: 1;
+}
+
+.tip-header h2 {
+    color: #4D4D4D;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(2.25rem * var(--dashboard-scale));
+    font-style: normal;
+    font-weight: 600;
+    line-height: 121.042%;
+    margin: 0;
+}
+
+.tip-card p {
+    color: #4D4D4D;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(2rem * var(--dashboard-scale));
+    font-style: normal;
+    font-weight: 400;
+    line-height: 121.042%;
+    margin: 0;
+}
+
+/*
+  הדמות מתחילה בגבול השמאלי של tip-area.
+  אם את רוצה שתציץ קצת החוצה: left: calc(-1rem * var(--dashboard-scale));
+*/
+.dashboard-mascot {
+    position: absolute;
+    left: calc(-6.8rem * var(--dashboard-scale));
+    bottom: calc(1.5rem * var(--dashboard-scale));
+
+    width: calc(8.5rem * var(--dashboard-scale));
+    height: auto;
+    object-fit: contain;
+
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* ===== Sessions Panel ===== */
+
+.sessions-panel {
+    grid-area: sessions;
+    align-self: stretch;
+
+    width: calc(59rem * var(--dashboard-scale));
+
+    /*
+      הגובה מותאם לגובה הטור השמאלי:
+      H1 + כרטיס כחול + כרטיס טיפ.
+      כך הוא מתחיל בגובה ה-H1 ומסתיים באזור סוף tip-area.
+    */
+    height: calc(54.4rem * var(--dashboard-scale));
+    max-height: calc(100svh - (5.2rem * var(--dashboard-scale)));
+
+    border-radius: calc(2.9375rem * var(--dashboard-scale));
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.20);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding-block: calc(2rem * var(--dashboard-scale));
+    padding-inline: calc(1.75rem * var(--dashboard-scale));
+
+    overflow: hidden;
+    min-height: 0;
+}
+
+.sessions-panel > h2 {
+    width: 100%;
+
+    color: #2F2F2F;
+    text-align: right;
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(2.6rem * var(--dashboard-scale));
+    font-style: normal;
+    font-weight: 600;
+    line-height: 121.042%;
+
+    margin: 0 0 calc(1.75rem * var(--dashboard-scale));
+    padding-inline-end: calc(2rem * var(--dashboard-scale));
+}
+
+.sessions-list {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: calc(1.25rem * var(--dashboard-scale));
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-inline: calc(0.25rem * var(--dashboard-scale));
+    padding-block-end: calc(1rem * var(--dashboard-scale));
+
+    scrollbar-gutter: stable;
+}
+
+/* Chrome / Edge / Safari */
+.sessions-list::-webkit-scrollbar {
+    width: calc(1.49631rem * var(--dashboard-scale));
+}
+
+.sessions-list::-webkit-scrollbar-track {
+    border-radius: calc(0.375rem * var(--dashboard-scale));
+    background: #F0F0F0;
+}
+
+.sessions-list::-webkit-scrollbar-thumb {
+    min-height: calc(15.87813rem * var(--dashboard-scale));
+    border-radius: calc(0.41163rem * var(--dashboard-scale));
+    background: #D9D9D9;
+
+    /*
+      track width: 1.49631rem
+      thumb width: 0.82325rem
+      side space: בערך 0.33653rem מכל צד
+    */
+    border-left: calc(0.33653rem * var(--dashboard-scale)) solid #F0F0F0;
+    border-right: calc(0.33653rem * var(--dashboard-scale)) solid #F0F0F0;
+    background-clip: content-box;
+}
+
+/* Firefox */
+.sessions-list {
+    scrollbar-color: #D9D9D9 #F0F0F0;
+    scrollbar-width: auto;
+}
+
+/* ===== Session Card ===== */
+
+.session-card {
+    width: 100%;
+    min-height: calc(7.587rem * var(--dashboard-scale));
+
+    border-radius: calc(2.0625rem * var(--dashboard-scale));
+    background: rgba(234, 234, 234, 0.7);
+    box-shadow: 4px 4px 6.3px 0 rgba(0, 0, 0, 0.25);
+
+    display: grid;
+    grid-template-columns:
+        calc(2.2rem * var(--dashboard-scale))
+        calc(7rem * var(--dashboard-scale))
+        minmax(0, 1fr)
+        calc(3.78731rem * var(--dashboard-scale));
+
+    grid-template-areas: "delete progress info index";
+    align-items: center;
+    gap: calc(1.25rem * var(--dashboard-scale));
+
+    padding-inline: calc(1.25rem * var(--dashboard-scale));
+    padding-block: calc(1rem * var(--dashboard-scale));
+
+    cursor: pointer;
+}
+
+/* trash */
+
+.session-delete-button {
+    grid-area: delete;
+
+    border: none;
+    background: transparent;
+    padding: 0;
+
+    width: calc(1.9rem * var(--dashboard-scale));
+    height: calc(1.9rem * var(--dashboard-scale));
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+.session-delete-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* progress dots */
+
+.session-progress {
+    grid-area: progress;
+
+    display: flex;
+    flex-direction: row;
+    direction: ltr;
+    align-items: center;
+    justify-content: center;
+    gap: calc(0.7rem * var(--dashboard-scale));
+}
+
+.progress-dot {
+    width: calc(1.35rem * var(--dashboard-scale));
+    height: calc(1.35rem * var(--dashboard-scale));
+
+    border-radius: 50%;
+    background: rgba(81, 57, 150, 0.18);
+}
+
+.progress-dot.active {
+    background: #513996;
+}
+
+/* topic + date */
+
+.session-main-info {
+    grid-area: info;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: calc(0.35rem * var(--dashboard-scale));
+}
+
+.topic-title {
+    color: #000;
+    text-align: right;
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(1.45rem * var(--dashboard-scale));
+    font-style: normal;
+    font-weight: 500;
+    line-height: 121.042%;
+    letter-spacing: calc(0.01563rem * var(--dashboard-scale));
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.creation-date {
+    color: #636363;
+    text-align: right;
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(1rem * var(--dashboard-scale));
+    font-style: normal;
+    font-weight: 400;
+    line-height: 121.042%;
+    letter-spacing: calc(0.0125rem * var(--dashboard-scale));
+}
+
+/* number circle */
+
+.session-index-circle {
+    grid-area: index;
+
+    width: calc(3.78731rem * var(--dashboard-scale));
+    height: calc(3.78731rem * var(--dashboard-scale));
+
+    border-radius: 50%;
+    background: #513996;
+    color: #FFF;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(1.6rem * var(--dashboard-scale));
+    font-weight: 700;
+    line-height: 1;
+
+    flex: 0 0 auto;
+}
+
+/* ===== Loader / Empty ===== */
+
+.loader-box,
+.empty-state {
+    width: 100%;
+    min-height: calc(12rem * var(--dashboard-scale));
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(2rem * var(--dashboard-scale));
+    color: #4D4D4D;
+    text-align: center;
+}
+
+/* ===== Delete Modal ===== */
+
+.student-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.student-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: calc(2rem * var(--dashboard-scale));
+}
+
+.student-delete-dialog {
+    position: relative;
+    overflow: visible;
+
+    width: min(
+            calc(36rem * var(--dashboard-scale)),
+            90vw
+    );
+}
+
+.student-delete-content {
+    width: 100%;
+
+    border-radius: calc(2rem * var(--dashboard-scale));
+    background: #FFF;
+    box-shadow: 0 calc(1rem * var(--dashboard-scale)) calc(3rem * var(--dashboard-scale)) rgba(0, 0, 0, 0.3);
+
+    padding: calc(3rem * var(--dashboard-scale));
+
+    font-family: 'Fredoka', sans-serif;
+    text-align: right;
+}
+
+.student-delete-mascot {
+    position: absolute;
+
+    top: calc(-6rem * var(--dashboard-scale));
+    right: calc(2.5rem * var(--dashboard-scale));
+
+    width: calc(10rem * var(--dashboard-scale));
+    height: auto;
+    object-fit: contain;
+
+    z-index: 2;
+    pointer-events: none;
+}
+
+.student-delete-content {
+    position: relative;
+    z-index: 1;
+}
+
+.student-delete-header h5 {
+    color: #28498B;
+    font-size: calc(2.5rem * var(--dashboard-scale));
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 calc(2rem * var(--dashboard-scale));
+}
+
+.student-delete-body p {
+    color: #4D4D4D;
+    font-size: calc(1.8rem * var(--dashboard-scale));
+    line-height: 1.5;
+    margin: 0;
+}
+
+.student-delete-footer {
+    display: flex;
+    justify-content: flex-start;
+    gap: calc(1rem * var(--dashboard-scale));
+
+    margin-block-start: calc(3rem * var(--dashboard-scale));
+}
+
+.delete-confirm-button,
+.delete-cancel-button {
+    border: none;
+    border-radius: calc(2rem * var(--dashboard-scale));
+
+    font-family: 'Fredoka', sans-serif;
+    font-size: calc(1.5rem * var(--dashboard-scale));
+    font-weight: 700;
+
+    padding:
+            calc(1rem * var(--dashboard-scale))
+            calc(2.5rem * var(--dashboard-scale));
+
+    cursor: pointer;
+}
+
+.delete-confirm-button {
+    background: #dc3545;
+    color: #FFF;
+}
+
+.delete-cancel-button {
+    background: #EAEAEA;
+    color: #28498B;
+}
+
+/* ===== Clean Responsive Layout ===== */
+
+/* לפטופים קטנים וטאבלטים */
+@media (max-width: 1400px) {
+    .student-dashboard-page {
+        --dashboard-scale: 1;
+
+        min-height: 100svh;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+
+        padding: 2rem;
+    }
+
+    .dashboard-logo {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+
+        width: min(24rem, 70vw);
+        margin: 0 0 2rem;
+
+        z-index: 1;
+    }
+
+    .dashboard-exit-button {
+        position: fixed;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 3rem;
+        height: 3rem;
+        z-index: 20;
+    }
+
+    .dashboard-layout {
+        width: 100%;
+        max-width: 62rem;
+
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+
+        gap: 2rem;
+        margin-top: 0;
+    }
+
+    .dashboard-side-panel {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+
+    .student-greeting {
+        margin: 0 0 1rem;
+    }
+
+    .student-greeting h1 {
+        text-align: center;
+        font-size: 3.2rem;
+    }
+
+    .new-practice-card {
+        width: 100%;
+        height: auto;
+        min-height: 20rem;
+
+        border-radius: 3rem;
+        padding: 2rem;
+        margin-block-end: 2rem;
+    }
+
+    .new-practice-button {
+        width: 8rem;
+        height: 8.4rem;
+
+        border-radius: 2rem;
+        border-width: 0.3rem;
+    }
+
+    .new-practice-card h2 {
+        font-size: 2.2rem;
+    }
+
+    .new-practice-card p {
+        font-size: 1.4rem;
+    }
+
+    .tip-area {
+        width: 100%;
+
+        position: relative;
+
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tip-card {
+        width: 100%;
+        min-height: auto;
+
+        border-radius: 3rem;
+        padding: 2.5rem;
+    }
+
+    .tip-header h2 {
+        font-size: 2.2rem;
+    }
+
+    .tip-card p {
+        font-size: 1.8rem;
+    }
+
+    /*
+      ברספונסיביות הדמות לא תהיה absolute,
+      כדי שהיא לא תעלה על הכרטיסים.
+    */
+    .dashboard-mascot {
+        position: relative;
+        left: auto;
+        bottom: auto;
+
+        width: 8rem;
+        margin-top: -1.5rem;
+        margin-inline-start: 0;
+
+        z-index: 1;
+    }
+
+    .sessions-panel {
+        width: 100%;
+        height: auto;
+        min-height: 42rem;
+        max-height: none;
+
+        align-self: auto;
+
+        border-radius: 3rem;
+        padding: 2rem;
+
+        overflow: hidden;
+    }
+
+    .sessions-panel > h2 {
+        font-size: 2.5rem;
+        text-align: center;
+        padding-inline-end: 0;
+        margin: 0 0 1.5rem;
+    }
+
+    .sessions-list {
+        flex: none;
+        max-height: 34rem;
+
+        gap: 1.25rem;
+
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .session-card {
+        min-height: 7.5rem;
+
+        grid-template-columns: 2rem 6.5rem minmax(0, 1fr) 3.5rem;
+        gap: 1rem;
+
+        padding: 1rem;
+        border-radius: 2rem;
+    }
+
+    .session-delete-button {
+        width: 1.8rem;
+        height: 1.8rem;
+    }
+
+    .session-progress {
+        gap: 0.6rem;
+    }
+
+    .progress-dot {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+
+    .session-index-circle {
+        width: 3.4rem;
+        height: 3.4rem;
+        font-size: 1.5rem;
+    }
+
+    .topic-title {
+        font-size: 1.45rem;
+    }
+
+    .creation-date {
+        font-size: 1.1rem;
+    }
+
+    .loader-box,
+    .empty-state {
+        font-size: 1.6rem;
+        min-height: 10rem;
+    }
+
+    .student-delete-dialog {
+        width: min(44rem, 92vw);
+    }
+
+    .student-delete-content {
+        padding: 3rem;
+        border-radius: 2rem;
+    }
+
+    .student-delete-header h5 {
+        font-size: 2.4rem;
+    }
+
+    .student-delete-body p {
+        font-size: 1.6rem;
+    }
+
+    .delete-confirm-button,
+    .delete-cancel-button {
+        font-size: 1.4rem;
+    }
+}
+
+
+/* מובייל */
+@media (max-width: 700px) {
+    .student-dashboard-page {
+        --dashboard-scale: 1;
+
+        padding: 1rem;
+    }
+
+    .dashboard-logo {
+        width: min(18rem, 72vw);
+        margin-bottom: 1.5rem;
+    }
+
+    .dashboard-exit-button {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+
+        width: 3rem;
+        height: 3rem;
+
+        z-index: 20;
+    }
+
+    .dashboard-layout {
+        max-width: 100%;
+        gap: 1.5rem;
+    }
+
+    .student-greeting h1 {
+        font-size: 2.4rem;
+    }
+
+    .new-practice-card {
+        min-height: 16rem;
+        padding: 1.5rem;
+        border-radius: 2rem;
+        margin-block-end: 1.5rem;
+    }
+
+    .new-practice-button {
+        width: 6rem;
+        height: 6.4rem;
+        border-radius: 1.5rem;
+    }
+
+    .new-practice-card h2 {
+        font-size: 1.7rem;
+        margin: 1rem 0 0.4rem;
+    }
+
+    .new-practice-card p {
+        font-size: 1.15rem;
+    }
+
+    .tip-card {
+        padding: 1.5rem;
+        border-radius: 2rem;
+    }
+
+    .tip-header {
+        gap: 0.5rem;
+        margin-block-end: 1rem;
+    }
+
+    .tip-icon {
+        font-size: 1.8rem;
+    }
+
+    .tip-header h2 {
+        font-size: 1.6rem;
+    }
+
+    .tip-card p {
+        font-size: 1.2rem;
+        line-height: 1.45;
+    }
+
+    .dashboard-mascot {
+        width: 6rem;
+        margin-top: -1rem;
+    }
+
+    .sessions-panel {
+        min-height: 34rem;
+
+        border-radius: 2rem;
+        padding: 1.25rem;
+    }
+
+    .sessions-panel > h2 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .sessions-list {
+        max-height: 28rem;
+        gap: 0.9rem;
+    }
+
+    .session-card {
+        min-height: auto;
+
+        grid-template-columns: 1.6rem 4.5rem minmax(0, 1fr) 2.7rem;
+        gap: 0.55rem;
+
+        padding: 0.85rem;
+        border-radius: 1.4rem;
+    }
+
+    .session-delete-button {
+        width: 1.4rem;
+        height: 1.4rem;
+    }
+
+    .session-progress {
+        gap: 0.35rem;
+    }
+
+    .progress-dot {
+        width: 0.85rem;
+        height: 0.85rem;
+    }
+
+    .session-index-circle {
+        width: 2.7rem;
+        height: 2.7rem;
+        font-size: 1.1rem;
+    }
+
+    .topic-title {
+        font-size: 1rem;
+    }
+
+    .creation-date {
+        font-size: 0.8rem;
+    }
+
+    .sessions-list::-webkit-scrollbar {
+        width: 0.65rem;
+    }
+
+    .sessions-list::-webkit-scrollbar-thumb {
+        border-left: 0.18rem solid #F0F0F0;
+        border-right: 0.18rem solid #F0F0F0;
+    }
+
+    .student-delete-modal {
+        padding: 1rem;
+    }
+
+    .student-delete-dialog {
+        width: 94vw;
+    }
+
+    .student-delete-content {
+        padding: 1.5rem;
+        border-radius: 1.5rem;
+    }
+
+    .student-delete-header h5 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .student-delete-body p {
+        font-size: 1rem;
+    }
+
+    .student-delete-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-block-start: 1.5rem;
+    }
+
+    .delete-confirm-button,
+    .delete-cancel-button {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.9rem 1.2rem;
+    }
+}
+
+
+/* מובייל ממש צר */
+@media (max-width: 390px) {
+    .dashboard-logo {
+        width: min(15rem, 70vw);
+    }
+
+    .student-greeting h1 {
+        font-size: 2rem;
+    }
+
+    .session-card {
+        grid-template-columns: 1.4rem 3.8rem minmax(0, 1fr) 2.4rem;
+        gap: 0.45rem;
+        padding: 0.75rem;
+    }
+
+    .progress-dot {
+        width: 0.7rem;
+        height: 0.7rem;
+    }
+
+    .topic-title {
+        font-size: 0.9rem;
+    }
+
+    .creation-date {
+        font-size: 0.72rem;
+    }
+
+    .session-index-circle {
+        width: 2.4rem;
+        height: 2.4rem;
+        font-size: 1rem;
+    }
+}
+@media (max-width: 700px) {
+    .dashboard-mascot {
+        display: none;
+    }
+}

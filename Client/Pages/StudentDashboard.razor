@@ -1,0 +1,272 @@
+@page "/StudentDashboard"
+@using BlazorGoogleLogin.Client.Services
+@using BlazorGoogleLogin.Shared.DTOs
+@using BlazorGoogleLogin.Shared
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject SessionState State
+
+<div class="student-dashboard-page">
+
+    <img src="images/logo_black-removebg-preview%20(1).png" class="dashboard-logo" alt="Logo" />
+
+    <button class="dashboard-exit-button" @onclick="GoToMainScreen" aria-label="יציאה למסך הכניסה">
+        <img src="images/leaveICON.png" alt="אייקון של חצי ריבוע וחץ שיוצא מכיוונו ומצביע על הכיוון הנגדי" />
+    </button>
+
+    <div class="dashboard-layout">
+
+        <section class="sessions-panel" dir="rtl">
+            <h2>האימונים שלי</h2>
+
+            @if (_userSessions == null)
+            {
+                <div class="loader-box">
+                    <p>טוען את היסטוריית האימונים</p>
+                </div>
+            }
+            else if (!_userSessions.Any())
+            {
+                <div class="empty-state">
+                    <p>עדיין אין אימונים. שנתחיל?</p>
+                </div>
+            }
+            else
+            {
+                <div class="sessions-list">
+                    @foreach (var item in _userSessions
+                        .OrderBy(session => session.CreatedAt)
+                        .Select((session, index) => new { Session = session, Number = index + 1 }))
+                    {
+                        <div class="session-card" @onclick="() => NavigateToSession(item.Session)">
+
+                            <button class="session-delete-button"
+                                    @onclick:stopPropagation="true"
+                                    @onclick="() => OpenDeleteModal(item.Session)"
+                                    aria-label="מחיקת אימון">
+                                <img src="images/deleteICON.png" alt="אייקון של פח" />
+                            </button>
+
+                            <div class="session-progress" aria-label="שלב האימון">
+                                <span class="progress-dot @(item.Session.CurrentPhase >= 2 ? "active" : "")"></span>
+                                <span class="progress-dot @(item.Session.CurrentPhase >= 3 ? "active" : "")"></span>
+                                <span class="progress-dot @(item.Session.CurrentPhase >= 4 ? "active" : "")"></span>
+                            </div>
+
+                            <div class="session-main-info">
+                                <span class="topic-title">@item.Session.Topic</span>
+                                <span class="creation-date">
+                                    @item.Session.CreatedAt.ToString("HH:mm | dd/MM/yy")
+                                </span>
+                            </div>
+
+                            <div class="session-index-circle">
+                                @item.Number
+                            </div>
+
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="dashboard-side-panel">
+
+            <div class="student-greeting">
+                <h1>Hi @user?.Name</h1>
+            </div>
+
+            <div class="new-practice-card">
+                <div class="card-corner-blur"></div>
+
+                <button class="new-practice-button" @onclick="HandleCreateSession" aria-label="התחל אימון חדש">
+                    <img src="images/createNewICON.png" class="new-practice-icon" alt="אייקון של הסימן פלוס" />
+                </button>
+
+                <h2>התחילו אימון חדש</h2>
+                <p>תכננו והתאמנו על ההצגה שלכם/ן</p>
+            </div>
+
+            <div class="tip-area">
+                <div class="tip-card" dir="rtl">
+                    <div class="tip-corner-blur"></div>
+
+                    <div class="tip-header">
+                        <img src="images/tipICON.png" class="tip-icon" alt="אייקון נורה" />
+                        <h2>טיפ מ- Ted Friend</h2>
+                    </div>
+
+                    <p>
+                        במסך הזה אפשר לעקוב אחר ההתקדמות שלכם/ן!
+                        הנקודות הסגולות מסמנות האם אתם/ן בשלב הפתיחה, הגוף או הסיום.
+                        המשיכו לתרגל אימון קיים או התחילו אימון חדש!
+                    </p>
+                </div>
+
+                <img src="images/side_peak.png"
+                     class="dashboard-mascot"
+                     alt="הדמות המלווה של המערכת" />
+            </div>
+
+        </section>
+
+    </div>
+
+    @if (_showDeleteModal)
+    {
+        <div class="student-modal-backdrop"></div>
+
+        <div class="student-delete-modal" tabindex="-1">
+            <div class="student-delete-dialog">
+                <img src="images/pickupmasscot.png"
+                     class="student-delete-mascot"
+                     alt="הדמות המלווה של המערכת" />
+                <div class="student-delete-content" dir="rtl">
+                    <div class="student-delete-header">
+                        <h5>למחוק את השיחה?</h5>
+                    </div>
+
+                    <div class="student-delete-body">
+                        <p>בלחיצה על הכפתור הזה השיחה תימחק ולא יהיה אפשר לשחזר אותה.</p>
+                    </div>
+
+                    <div class="student-delete-footer">
+                        <button type="button" class="delete-confirm-button" @onclick="ConfirmDelete">
+                            מחיקת שיחה
+                        </button>
+                        <button type="button" class="delete-cancel-button" @onclick="CloseModal">
+                            השארת השיחה
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    // קבלת נתוני המשתמש המחובר (גוגל לוגין) מהקומפוננטה העליונה
+    [CascadingParameter]
+    private UserDTO user { get; set; }
+
+    // רשימה שתכיל את כל השיחות שנשלוף מהשרת
+    private List<ChatSession> _userSessions;
+
+    // פונקציית אתחול: רצה ברגע שהעמוד נטען
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (user != null)
+            {
+                // פנייה לקונטרולר לשליפת כל הסשנים ששייכים ל-ID של המשתמש הנוכחי
+                _userSessions = await Http.GetFromJsonAsync<List<ChatSession>>($"api/GPT/GetSessions/{user.Id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // הדפסת שגיאה לקונסול במידה והשליפה נכשלה
+            Console.WriteLine($"Error fetching sessions: {ex.Message}");
+            _userSessions = new List<ChatSession>();
+        }
+    }
+
+    // יצירת סשן חדש: פנייה לשרת ליצירת שורה חדשה בטבלה וניווט לצ'אט
+    private async Task HandleCreateSession()
+    {
+        if (user != null)
+        {
+            var response = await Http.PostAsJsonAsync("api/GPT/CreateSession", user.Id);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var newId = await response.Content.ReadFromJsonAsync<int>();
+
+                // 1. מעדכנים את הזיכרון (State)
+                State.SelectedSessionId = newId;
+                State.CurrentPhase = 1; // תמיד מתחילים בשלב הקלט
+
+                // 2. מנווטים לנתיב "נקי" ללא ID
+                Navigation.NavigateTo("/TopicSelection");
+            }
+        }
+    }
+    
+    private bool _showDeleteModal = false;
+    private ChatSession _sessionToDelete;
+    private bool _isDeleting = false;
+
+    // פתיחת המודאל ושמירת הסשן שרוצים למחוק
+    private void OpenDeleteModal(ChatSession session)
+    {
+        _sessionToDelete = session;
+        _showDeleteModal = true;
+    }
+
+    // סגירת המודאל בלי למחוק
+    private void CloseModal()
+    {
+        _showDeleteModal = false;
+        _sessionToDelete = null;
+    }
+
+    // הביצוע של המחיקה בפועל מול הקונטרולר
+    private async Task ConfirmDelete()
+    {
+        if (_sessionToDelete == null || _isDeleting) return;
+
+        _isDeleting = true;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/GPT/DeleteSession/{_sessionToDelete.Id}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                // הסרה מהרשימה המקומית כדי לעדכן את ה-UI מיד
+                _userSessions.Remove(_sessionToDelete);
+                CloseModal();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        finally
+        {
+            _isDeleting = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void NavigateToSession(ChatSession session)
+    {
+        // 1. שומרים בזיכרון את הנתונים מהסשן שנבחר
+        State.SelectedSessionId = session.Id; 
+        State.Topic = session.Topic;           
+        State.CurrentPhase = session.CurrentPhase ?? 1;
+
+        // 2. ניווט לפי השלב - טיפול בכל מה שמעל 5
+        if (State.CurrentPhase > 5) 
+        {
+            // כל שלב גבוה מ-5 (סיום, סיכום וכו') שולח ישירות לפידבק
+            Navigation.NavigateTo($"/FeedbackStudent/{session.Id}");
+        }
+        else if (State.CurrentPhase == 1)
+        {
+            Navigation.NavigateTo("/TopicSelection");
+        }
+        else
+        {
+            Navigation.NavigateTo("/Chat");
+        }
+    }
+    
+    private void GoToMainScreen()
+    {
+        State.SelectedSessionId = 0;
+        
+        // ניווט פשוט למסך הכניסה
+        Navigation.NavigateTo("/");
+    }
+}

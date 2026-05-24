@@ -1,0 +1,297 @@
+@page "/TeacherDashboard"
+@using BlazorGoogleLogin.Client.Services
+@using BlazorGoogleLogin.Shared.DTOs
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="teacher-dashboard-page" dir="rtl">
+
+    <main class="teacher-dashboard-content">
+
+        <h1 class="teacher-dashboard-title">לוח בקרה למדריכה</h1>
+
+        <div class="teacher-header-row">
+            <h2 class="teacher-greeting">שלום, @(user?.Name ?? "המורה")</h2>
+
+            <button class="teacher-exit-button" @onclick="GoToMainScreen" aria-label="יציאה מהמערכת">
+                <img src="images/leaveICON.png" alt="אייקון של יציאה. חצי ריבוע שיוצא מחציו קו לכיוון הנגדי" />
+                <span>יציאה מהמערכת</span>
+            </button>
+        </div>
+
+        <div class="teacher-top-row">
+
+            <section class="teacher-code-area">
+
+                <div class="class-code-card">
+                    <div class="card-blur-circle"></div>
+
+                    <p>שתפו את הכיתה בקוד הבא כדי שיתחברו למערכת:</p>
+
+                    @if (info == null)
+                    {
+                    <div class="teacher-loader"></div>
+                    }
+                    else
+                    {
+                    <div class="class-code-value">@info.Code</div>
+                    }
+                </div>
+            </section>
+
+            <section class="teacher-stats-card" aria-label="סטטוס כיתה">
+                <div class="card-blur-circle"></div>
+
+                <div class="teacher-stat-item">
+                    <strong>@registeredCount</strong>
+                    <span>תלמידים רשומים</span>
+                </div>
+
+                <div class="teacher-stat-divider"></div>
+
+                <div class="teacher-stat-item">
+                    <strong>@completedPresentationsCount</strong>
+                    <span>מצגות שהושלמו</span>
+                </div>
+
+                <div class="teacher-stat-divider"></div>
+
+                <div class="teacher-stat-item">
+                    <strong>@helpRequestsCount</strong>
+                    <span class="stat-with-icon">
+                        פניות לעזרה
+                    </span>
+                </div>
+            </section>
+
+        </div>
+
+        <section class="students-progress-card">
+
+            <header class="students-progress-header">
+                <h2>התקדמות הכיתה</h2>
+            </header>
+
+            <div class="students-table-divider"></div>
+
+            <div class="students-table-scroll">
+                @if (reports == null)
+                {
+                <div class="teacher-empty-state">
+                    <div class="teacher-loader"></div>
+                    <p>טוען נתונים מהכיתה שלך...</p>
+                </div>
+                }
+                else if (!reports.Any())
+                {
+                <div class="teacher-empty-state">
+                    <p>עדיין אין פעילות של תלמידים בכיתה זו.</p>
+                </div>
+                }
+                else
+                {
+                <table class="students-progress-table">
+                    <thead>
+                    <tr>
+                        <th>שם התלמיד/ה</th>
+                        <th>כמות אימונים</th>
+                        <th>דקדוק</th>
+                        <th>שטף</th>
+                        <th>סטטוס עזרה</th>
+                        <th>ביקור אחרון</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    @foreach (var student in reports)
+                    {
+                    var isInactive = !student.LastActive.HasValue || (DateTime.Now - student.LastActive.Value).TotalDays > 7;
+
+                    <tr>
+                        <td>
+                            <div class="student-name-cell">
+                                <div>
+                                    <strong>@student.Name</strong>
+                                    <small>@student.Mail</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span>@student.TotalSessions</span>
+                        </td>
+
+                        <td>
+                                        <span class="score-pill">
+                                            @(student.GrammarScore?.ToString("F1") ?? "-")
+                                        </span>
+                        </td>
+
+                        <td>
+                                        <span class="score-pill">
+                                            @(student.FluencyScore?.ToString("F1") ?? "-")
+                                        </span>
+                        </td>
+
+                        <td>
+                            @switch (student.NeedsHelpScore)
+                            {
+                            case 1:
+                            <span class="help-status muted">אין צורך בעזרה</span>
+                            break;
+
+                            case 2:
+                            <span class="help-status">זקוק/ה להכוונה</span>
+                            break;
+
+                            case 3:
+                            <button class="help-request-button"
+                                    @onclick="() => OpenCommentModal(student.Name, student.FreeTextComment, student.HelpTopic)">
+                                <img src="images/CallForHelp.png" alt="כוכבית צהובה" />
+                                <span>זקוק/ה לעזרה</span>
+                            </button>
+                            break;
+
+                            default:
+                            <span class="help-status muted">אין דיווח</span>
+                            break;
+                            }
+                        </td>
+
+                        <td>
+                            @if (isInactive)
+                            {
+                            <div class="last-active inactive">לא זוהתה פעילות</div>
+
+                            @if (student.LastActive.HasValue)
+                            {
+                            <small>@student.LastActive.Value.ToString("dd/MM/yyyy")</small>
+                            }
+                            }
+                            else
+                            {
+                            <div class="last-active">
+                                @student.LastActive.Value.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                            }
+                        </td>
+                    </tr>
+                    }
+                    </tbody>
+                </table>
+                }
+            </div>
+        </section>
+
+    </main>
+
+    @if (_showCommentModal)
+    {
+    <div class="teacher-modal-backdrop" @onclick="CloseModal"></div>
+
+    <div class="teacher-help-modal" tabindex="-1">
+        <div class="teacher-help-dialog" dir="rtl">
+            <button type="button" class="teacher-modal-close" @onclick="CloseModal" aria-label="סגירה">
+                ×
+            </button>
+
+            <h2>פרטי בקשת העזרה</h2>
+
+            <div class="modal-student-meta">
+                <p>תלמיד/ה: @_currentStudentName</p>
+                <span>נושא האימון: @_currentHelpTopic</span>
+            </div>
+
+            <h3>הודעת התלמיד/ה:</h3>
+
+            <div class="modal-comment-box">
+                @if (string.IsNullOrWhiteSpace(_currentComment))
+                {
+                <p>התלמיד/ה לא צירפו הודעה</p>
+                }
+                else
+                {
+                <p>"@_currentComment"</p>
+                }
+            </div>
+        </div>
+    </div>
+    }
+
+</div>
+
+@code {
+    [CascadingParameter]
+    private UserDTO user { get; set; }
+
+    private ClassCodeResponseDTO? info;
+    private List<StudentReportDTO>? reports;
+    
+    private int registeredCount = 0;
+    private int totalSessionsCount = 0;
+    private int helpRequestsCount = 0;
+    private int completedPresentationsCount = 0;
+    private double classAverage = 0; 
+    private bool _showCommentModal = false;
+    private string _currentStudentName = "";
+    private string _currentComment = "";
+    private string _currentHelpTopic;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var infoTask = Http.GetFromJsonAsync<ClassCodeResponseDTO>("api/users/my-info");
+            var reportTask = Http.GetFromJsonAsync<List<StudentReportDTO>>("api/users/my-students-report");
+
+            info = await infoTask;
+            reports = await reportTask;
+
+            // קריאה לפונקציה שתמלא את המשתנים
+            UpdateDashboardStats();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private void UpdateDashboardStats()
+    {
+        if (reports != null && reports.Any())
+        {
+            registeredCount = reports.Count;
+            totalSessionsCount = reports.Sum(r => r.TotalSessions);
+            helpRequestsCount = reports.Count(r => r.NeedsHelpScore == 3);
+            completedPresentationsCount = reports.Count(r => r.CurrentPhase == 7);
+            classAverage = reports
+                .Where(r => r.GrammarScore.HasValue && r.FluencyScore.HasValue)
+                .Select(r => (r.GrammarScore.Value + r.FluencyScore.Value) / 2.0)
+                .DefaultIfEmpty(0)
+                .Average();
+        }
+    }
+
+    private void OpenCommentModal(string studentName, string comment, string topic)
+    {
+        _currentStudentName = studentName;
+        _currentComment = comment;
+        _currentHelpTopic = topic; // שמירת הנושא בזיכרון של המודאל
+        _showCommentModal = true;
+    }
+
+    private void CloseModal()
+    {
+        _showCommentModal = false;
+    }
+    
+    private void GoToMainScreen()
+    {
+        // ניווט פשוט למסך הכניסה
+        Navigation.NavigateTo("/");
+    }
+    
+}

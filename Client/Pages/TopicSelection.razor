@@ -1,0 +1,162 @@
+@page "/TopicSelection"
+@using BlazorGoogleLogin.Client.Services
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject SessionState State
+
+<div class="prepare-container">
+
+    <div class="prepare-content">
+
+        <div class="logo-container">
+            <img src="images/logo_black-removebg-preview%20(1).png"
+                 alt="Classi Logo"
+                 class="classi-logo" />
+        </div>
+
+        <div class="input-card">
+            <h2>יצירת מצגת חדשה</h2>
+            <p class="subtitle">העלו קובץ או כתבו על מה תרצו לדבר</p>
+
+            <div class="upload-section">
+                @if (selectedFile == null)
+                {
+                <label class="custom-file-upload">
+                    <InputFile OnChange="HandleFileSelected"
+                               accept=".pdf,.doc,.docx"
+                               class="file-input-hidden" />
+
+                    <div class="icon-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="upload-icon" viewBox="0 0 52 51" fill="none">
+                            <path d="M0.5 44.6631L0.499999 27.4854C0.499999 26.8005 0.726499 26.2493 1.17773 25.7979C1.62916 25.3464 2.17994 25.1205 2.8623 25.1221C3.54577 25.1238 4.09781 25.351 4.55176 25.8018C5.00375 26.2506 5.22978 26.7997 5.22656 27.4834L5.22656 45.1631L46.3086 45.1631L46.3086 27.4853C46.3086 26.8003 46.5358 26.2493 46.9873 25.7979C47.4387 25.3464 47.9885 25.1205 48.6709 25.1221C49.3545 25.1237 49.9073 25.3509 50.3613 25.8018C50.8131 26.2506 51.0384 26.7999 51.0352 27.4834L51.0352 44.6631C51.0352 46.1041 50.5282 47.3253 49.501 48.3525C48.4738 49.3797 47.2518 49.8878 45.8086 49.8896L5.72656 49.8896C4.2857 49.8896 3.06447 49.3817 2.03711 48.3525C1.07379 47.3875 0.566918 46.2542 0.505859 44.9307L0.5 44.6631ZM13.2031 13.1543C13.1826 12.4813 13.4044 11.9231 13.8809 11.4482L13.8818 11.4482L24.1172 1.21289C24.6023 0.727735 25.1454 0.499999 25.7676 0.499999C26.3897 0.500034 26.9328 0.727772 27.418 1.21289L37.6533 11.4482C38.1317 11.9267 38.3508 12.474 38.332 13.1182C38.3131 13.7697 38.0714 14.3283 37.5879 14.8145C37.1152 15.2437 36.5662 15.4453 35.9131 15.4248C35.2454 15.4037 34.7114 15.1765 34.2803 14.749L28.9844 9.45215L28.1309 8.59863L28.1309 30.3486C28.1308 31.0333 27.9038 31.583 27.4531 32.0322C27.0013 32.4825 26.4501 32.7092 25.7666 32.7109C25.0848 32.7125 24.5345 32.4872 24.083 32.0342C23.6305 31.5801 23.4044 31.029 23.4043 30.3486L23.4043 8.59863L17.1826 14.8203C16.7544 15.2485 16.2386 15.4619 15.6035 15.4619C14.9676 15.4619 14.4196 15.2476 13.9375 14.8057C13.4692 14.3764 13.224 13.8375 13.2031 13.1543Z" fill="#333333" stroke="#333333"/>
+                        </svg>
+                    </div>
+
+                    <span class="upload-text">בחרו קובץ Word או Pdf מהמחשב או גררו אותו לכאן</span>
+                </label>
+                }
+                else
+                {
+                <div class="custom-file-upload file-uploaded-state">
+                    <div class="icon-circle success-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="success-check-icon" width="55" height="51" viewBox="0 0 55 51" fill="none">
+                            <path d="M3.50007 29.3044L17.707 46.6431L51.0397 3.50016" stroke="#20945D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="file-info-row">
+                        <p class="file-name">קובץ נבחר: @selectedFile.Name</p>
+                        <button type="button" class="remove-file-btn" @onclick="ClearFile">הסרה</button>
+                    </div>
+                </div>
+                }
+
+                @if (!string.IsNullOrEmpty(fileErrorMessage))
+                {
+                <p class="error-message">@fileErrorMessage</p>
+                }
+            </div>
+
+            <div class="divider">
+                <span>או</span>
+            </div>
+
+            <div class="topic-section">
+                <textarea value="@manualContext"
+                          @oninput="HandleTextareaInput"
+                          placeholder="אפשר גם לספר כאן את נושא ההרצאה..."></textarea>
+            </div>
+
+            <button class="start-btn"
+                    @onclick="ProcessAndStart"
+                    disabled="@(isProcessing || !string.IsNullOrEmpty(fileErrorMessage) || (selectedFile == null && string.IsNullOrWhiteSpace(manualContext)))">
+                @if (isProcessing)
+                {
+                <span>מעבד נתונים...</span>
+                }
+                else
+                {
+                <span>יאללה בואו נתחיל</span>
+                }
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+    // הלוגיקה של ה-C# שלכם נשארת בדיוק אותו דבר...
+    private IBrowserFile selectedFile = null;
+    private string manualContext = "";
+    private bool isProcessing = false;
+    private string fileErrorMessage = "";
+
+    private void ClearFile()
+    {
+        selectedFile = null;
+        fileErrorMessage = "";
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        var allowedExtensions = new[] { ".pdf", ".doc", ".docx" };
+        var extension = System.IO.Path.GetExtension(file.Name).ToLower();
+
+        if (allowedExtensions.Contains(extension))
+        {
+            selectedFile = file;
+            manualContext = "";
+            fileErrorMessage = "";
+        }
+        else
+        {
+            selectedFile = null;
+            fileErrorMessage = "אפשר להעלות רק קבצי PDF או Word";
+        }
+    }
+
+    private void HandleTextareaInput(ChangeEventArgs e)
+    {
+        manualContext = e.Value?.ToString() ?? "";
+        if (!string.IsNullOrWhiteSpace(manualContext))
+        {
+            selectedFile = null;
+            fileErrorMessage = "";
+        }
+    }
+
+    private async Task ProcessAndStart()
+    {
+        if (State.SelectedSessionId == 0) return;
+        isProcessing = true;
+        try
+        {
+            if (selectedFile != null)
+            {
+                var content = new MultipartFormDataContent();
+                var fileContent = new StreamContent(selectedFile.OpenReadStream(1024 * 1024 * 10));
+                content.Add(fileContent, "File", selectedFile.Name);
+                var response = await Http.PostAsync($"api/GPT/UploadDocument/{State.SelectedSessionId}", content);
+                State.DocumentContext = await response.Content.ReadAsStringAsync();
+            }
+            else if (!string.IsNullOrWhiteSpace(manualContext))
+            {
+                State.DocumentContext = manualContext;
+                await Http.PostAsJsonAsync($"api/GPT/ProcessManualContext/{State.SelectedSessionId}", manualContext);
+            }
+            State.CurrentPhase = 2;
+            await Http.PostAsync($"api/GPT/UpdatePhase/{State.SelectedSessionId}/2", null);
+            Navigation.NavigateTo("/Chat");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}

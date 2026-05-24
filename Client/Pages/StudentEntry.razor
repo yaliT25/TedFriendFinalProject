@@ -1,0 +1,79 @@
+@page "/StudentEntry"
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<div class="student-entry-page" dir="rtl">
+
+    <main class="student-entry-content">
+
+        <img src="images/logo_black-removebg-preview%20(1).png"
+             class="student-entry-logo"
+             alt="Classi Logo" />
+
+        <section class="student-entry-card">
+
+            <header class="student-entry-header">
+                <h1>שיוך לכיתה</h1>
+                <p>הזינו את הקוד שקיבלתם מהמורה כדי להצטרף לכיתה</p>
+            </header>
+
+            <div class="student-code-field">
+                <input @bind="classCode"
+                       @bind:event="oninput"
+                       class="student-code-input"
+                       placeholder="הזינו קוד כיתה"
+                       maxlength="6"
+                       autocomplete="off" />
+            </div>
+
+            <button @onclick="JoinClass"
+                    class="join-class-button">
+                התחברות לכיתה
+            </button>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="join-message @messageClass">
+                    @message
+                </div>
+            }
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    private string classCode = "";
+    private string message = "";
+    private string messageClass = "";
+
+    private async Task JoinClass()
+    {
+        if (string.IsNullOrWhiteSpace(classCode))
+        {
+            message = "בבקשה הזינו קוד.";
+            messageClass = "alert-warning";
+            return;
+        }
+
+        // שליחת הקוד לשרת. השרת כבר יזהה את התלמידה לפי ה-JWT
+        var response = await Http.PostAsJsonAsync("api/users/join-class", classCode);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            message = "ברוכה הבאה! שויכת לכיתה בהצלחה.";
+            messageClass = "alert-success";
+            
+            // מעבר לדף הבית של התלמידה אחרי רגע
+            await Task.Delay(1500);
+            Nav.NavigateTo("/StudentDashboard");
+        }
+        else
+        {
+            message = "הקוד לא נמצא. ודאו שהעתקתם נכון.";
+            messageClass = "alert-danger";
+        }
+    }
+}

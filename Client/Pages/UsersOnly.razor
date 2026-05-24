@@ -1,0 +1,110 @@
+﻿@page "/Users"
+@using Microsoft.AspNetCore.Authorization
+@using BlazorGoogleLogin.Shared.DTOs
+@attribute [Authorize]
+@inject IAuthenticationService _Auth
+@inject NavigationManager Nav
+@inject HttpClient Http
+
+<AuthorizeView Context="authContext">
+    <Authorized>
+        <div class="users-page-container">
+
+            <div class="users-content">
+                <img src="images/logo_black-removebg-preview%20(1).png" class="users-main-logo" alt="Logo" />
+
+                <div class="users-card">
+                    <div class="welcome-section">
+                        <h1>Hi @user?.Name, it's so nice to have you here!</h1>
+
+                        <div class="users-divider"></div>
+
+                        <h2>בחרו תפקיד כדי להמשיך</h2>
+                    </div>
+
+                    <div class="role-grid">
+                        <button type="button" class="role-option" @onclick='() => SelectRole("Teacher")'>
+                            <img src="images/teacherICON.png" class="role-icon teacher" alt="אייקון של מורה עומד ליד לוח ומלמד" />
+                            <span class="role-btn-text">מורה</span>
+                        </button>
+
+                        <button type="button" class="role-option" @onclick='() => SelectRole("Student")'>
+                            <img src="images/studentICON.png" class="role-icon student" alt="אייקון של תלמיד עם כובע סטודנט" />
+                            <span class="role-btn-text">תלמיד/ה</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <img src="images/TedFLeftEnter.png"
+                 class="users-mascot"
+                 alt="הדמות המלווה של המערכת" />
+        </div>
+    </Authorized>
+
+    <NotAuthorized>
+        <div class="users-unauthorized-container">
+            <p>Please log in to continue</p>
+            <button class="users-login-btn" @onclick="LoginWithGoogle">Login with Google</button>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter]
+    private UserDTO user { get; set; }
+
+    void LoginWithGoogle()
+    {
+        Nav.NavigateTo("api/google/login", forceLoad: true);
+    }
+
+    private async Task SelectRole(string role)
+    {
+        try 
+        {
+            // 1. עדכון העדפת המשתמש:
+            // אנחנו מודיעים לשרת מה המשתמש בחר (מורה או תלמיד) כדי שישמור זאת ב-Database.
+            var response = await Http.PostAsJsonAsync("api/users/update-role", role);
+    
+            if (response.IsSuccessStatusCode)
+            {
+                // 2. קבלת "כרטיס המידע" (DTO):
+                // השרת מחזיר לנו את ה-ClassCodeResponseDTO שיצרת, שמספר לנו אם לתלמיד כבר יש כיתה.
+                var result = await response.Content.ReadFromJsonAsync<ClassCodeResponseDTO>();
+
+                // 3. צומת החלטה - מורה:
+                // מורים תמיד מופנים ללוח הבקרה של המורה לניהול הכיתה והתלמידים.
+                if (role == "Teacher")
+                {
+                    Nav.NavigateTo("/TeacherDashboard");
+                }
+                else 
+                {
+                    // 4. צומת החלטה - תלמיד (ניווט מותנה):
+                    // אם השדה ClassCode אינו ריק, זה אומר שהתלמידה כבר שויכה למורה בעבר.
+                    if (!string.IsNullOrEmpty(result?.ClassCode))
+                    {
+                        // "קיצור דרך" - דלגי ישר לעמוד העבודה והשיחות.
+                        Nav.NavigateTo("/StudentDashboard");
+                    }
+                    else
+                    {
+                        // אם זו פעם ראשונה או שהתלמידה טרם נרשמה לכיתה - שלחי אותה להזין קוד.
+                        Nav.NavigateTo("/StudentEntry");
+                    }
+                }
+            }
+            else 
+            {
+                // טיפול במקרה של תקלה בתקשורת מול השרת.
+                Console.WriteLine($"Server error during role update: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // הגנה על האפליקציה מפני קריסה במקרה של שגיאת לוגיקה בצד הלקוח.
+            Console.WriteLine($"Critical navigation error: {ex.Message}");
+        }
+    }
+    }

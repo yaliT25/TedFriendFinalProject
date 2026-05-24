@@ -1,0 +1,491 @@
+/* ===== Topic Selection Page ===== */
+
+.prepare-container {
+    position: relative;
+    width: 100%;
+    min-height: 100svh;
+    overflow: auto;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+
+    direction: rtl;
+    font-family: 'Fredoka', sans-serif;
+
+    background-image: url("images/AppBackground.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    box-sizing: border-box;
+    padding: 2rem;
+}
+
+.prepare-container *,
+.prepare-container *::before,
+.prepare-container *::after {
+    box-sizing: border-box;
+}
+
+/* העננים כבר לא נדרשים כי הרקע מגיע מתמונה */
+.cloud-decor {
+    display: none;
+}
+
+/*
+  זה המקום המרכזי לשליטה בגודל.
+  כל הכרטיס והאלמנטים הפנימיים גדלים לפי font-size הזה.
+  אם עדיין קטן מדי: תעלי את הערך האחרון מ-3.2rem ל-3.8rem / 4.5rem.
+*/
+.prepare-content {
+    font-size: clamp(1.5rem, 2.15vw, 3.2rem);
+
+    width: min(50em, calc(100vw - 4rem));
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin-block-start: 1em;
+    margin-block-end: 2em;
+
+    position: relative;
+    z-index: 2;
+}
+
+/* ===== Logo ===== */
+
+.logo-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1em;
+}
+
+.classi-logo {
+    width: min(19em, 45vw);
+    max-width: 100%;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+}
+
+/* ===== Input Card ===== */
+
+.input-card {
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 2.9375em;
+    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.20);
+
+    width: 100%;
+    max-width: 50em;
+
+    padding: 3em 2.5em;
+
+    box-sizing: border-box;
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-card h2 {
+    color: #000;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2em;
+    font-weight: 600;
+    margin: 0 0 0.5em 0;
+}
+
+.subtitle {
+    color: #555;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.25em;
+    margin: 0 0 2.5em 0;
+}
+
+.upload-section {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.custom-file-upload {
+    width: 100%;
+    min-height: 11em;
+
+    background: #EDEFF0;
+    border: 0.1875em dashed #6CADE6;
+    border-radius: 3em;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 1.5em;
+    box-sizing: border-box;
+
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.custom-file-upload:hover {
+    background: #E4E7E9;
+    border-color: #4A93D1;
+}
+
+/* העלמת כפתור ה-Choose file המקורי */
+::deep .file-input-hidden {
+    display: none !important;
+}
+
+.icon-circle {
+    width: 4.5em;
+    height: 4.5em;
+
+    border-radius: 50%;
+    border: 0.1875em solid rgba(108, 173, 230, 0.50);
+    background: #F2F9FE;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 1em;
+    transition: all 0.3s ease;
+}
+
+.upload-icon {
+    width: 2.3em;
+    height: 2.35em;
+}
+
+.upload-text {
+    color: #000;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.15em;
+    font-weight: 500;
+    line-height: 130%;
+    max-width: 80%;
+}
+
+.file-uploaded-state {
+    border-style: solid;
+    border-color: #20945D;
+    background: #F1F9F5;
+    cursor: default;
+}
+
+.success-circle {
+    border-color: rgba(32, 148, 93, 0.4);
+    background: #E8F5E9;
+}
+
+.success-check-icon {
+    width: 3.15213em;
+    height: 2.40975em;
+    transform: rotate(-7.303deg);
+}
+
+.file-info-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75em;
+    width: 100%;
+}
+
+.file-name {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.25em;
+    color: #20945D;
+    font-weight: 500;
+    margin: 0;
+    text-align: center;
+    word-break: break-all;
+}
+
+.remove-file-btn {
+    background: #FFF;
+    border: 0.125em solid #d32f2f;
+    color: #d32f2f;
+    border-radius: 1.5em;
+
+    padding: 0.4em 1.2em;
+
+    cursor: pointer;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1em;
+    font-weight: 500;
+
+    transition: all 0.2s;
+}
+
+.remove-file-btn:hover {
+    background: #ffebee;
+}
+
+.divider {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    text-align: center;
+
+    color: #6CADE6;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 1.25em;
+
+    margin: 1.5em 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 0.125em solid rgba(108, 173, 230, 0.4);
+}
+
+.divider span {
+    padding: 0 1em;
+}
+
+.topic-section {
+    width: 100%;
+    margin-bottom: 2.5em;
+}
+
+.topic-section textarea {
+    width: 100%;
+    height: 8em;
+
+    background: #EDEFF0;
+    border: 0.1875em dashed #6CADE6;
+    border-radius: 2em;
+
+    padding: 1.25em;
+    box-sizing: border-box;
+
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.2em;
+    color: #000;
+
+    outline: none;
+    resize: none;
+    text-align: right;
+
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.topic-section textarea:focus {
+    background: #FFF;
+    border-style: solid;
+    border-color: #28498B;
+}
+
+.start-btn {
+    width: 100%;
+    min-height: 4.5em;
+
+    border: none;
+    border-radius: 1.875em;
+
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.75em;
+    font-weight: 500;
+    letter-spacing: 0.28px;
+    text-align: center;
+    color: #FFF;
+
+    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.20);
+
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.start-btn:disabled {
+    background: #B5C9E8;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.start-btn:not(:disabled) {
+    background: #28498B;
+}
+
+.start-btn:not(:disabled):hover {
+    background: #1e376b;
+    transform: translateY(-2px);
+}
+.error-message {
+    color: #d32f2f;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1em;
+    margin-top: 0.5em;
+    text-align: center;
+}
+
+/* ===== Responsive ===== */
+
+/* לפטופים קטנים */
+@media (max-width: 1400px) {
+    .prepare-container {
+        padding: 2rem;
+    }
+
+    .prepare-content {
+        font-size: clamp(1.2rem, 2vw, 2.2rem);
+        width: min(48em, calc(100vw - 4rem));
+        margin-block-start: 1em;
+    }
+}
+
+/* אייפד / טאבלט */
+@media (max-width: 1024px) {
+    .prepare-container {
+        padding: 2rem 1.5rem;
+    }
+
+    .prepare-content {
+        font-size: clamp(1rem, 2.2vw, 1.55rem);
+        width: min(50em, 100%);
+        margin-block-start: 0.75em;
+    }
+
+    .classi-logo {
+        max-height: 4.5em;
+    }
+}
+
+/* מובייל */
+@media (max-width: 700px) {
+    .prepare-container {
+        padding: 1rem;
+    }
+
+    .prepare-content {
+        font-size: 1rem;
+        width: 100%;
+        margin-block-start: 0.5rem;
+        margin-block-end: 1rem;
+    }
+
+    .logo-container {
+        margin-bottom: 1rem;
+    }
+
+    .classi-logo {
+        max-height: 4rem;
+        max-width: 85vw;
+    }
+
+    .input-card {
+        border-radius: 2rem;
+        padding: 1.5rem 1.25rem;
+    }
+
+    .input-card h2 {
+        font-size: 1.7rem;
+    }
+
+    .subtitle {
+        font-size: 1.05rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .custom-file-upload {
+        min-height: 10rem;
+        border-radius: 2rem;
+        padding: 1.25rem;
+        border-width: 0.18rem;
+    }
+
+    .icon-circle {
+        width: 4rem;
+        height: 4rem;
+        border-width: 0.18rem;
+    }
+
+    .upload-icon {
+        width: 2rem;
+        height: 2.05rem;
+    }
+
+    .upload-text {
+        font-size: 1rem;
+        max-width: 95%;
+    }
+
+    .file-name {
+        font-size: 1rem;
+    }
+
+    .remove-file-btn {
+        font-size: 0.95rem;
+        border-radius: 1.25rem;
+        padding: 0.4rem 1rem;
+    }
+
+    .divider {
+        font-size: 1.1rem;
+        margin: 1.25rem 0;
+    }
+
+    .topic-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .topic-section textarea {
+        height: 7rem;
+        border-radius: 1.5rem;
+        font-size: 1rem;
+        padding: 1rem;
+        border-width: 0.18rem;
+    }
+
+    .start-btn {
+        min-height: 3.8rem;
+        font-size: 1.35rem;
+    }
+
+    .error-message {
+        font-size: 0.95rem;
+    }
+}
+
+/* מובייל צר */
+@media (max-width: 390px) {
+    .prepare-container {
+        padding: 0.75rem;
+    }
+
+    .input-card {
+        padding: 1.25rem 1rem;
+    }
+
+    .input-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.95rem;
+    }
+
+    .custom-file-upload {
+        min-height: 9rem;
+    }
+
+    .start-btn {
+        font-size: 1.2rem;
+    }
+}

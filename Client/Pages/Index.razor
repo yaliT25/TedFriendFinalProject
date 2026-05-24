@@ -1,0 +1,120 @@
+﻿@page "/"
+@inject NavigationManager Navigation
+
+<div class="landing-container">
+
+    <div class="landing-content">
+        <img src="images/logo_black-removebg-preview%20(1).png" class="main-logo" alt="לוגו המערכת קלאסי" />
+
+        <div class="login-card">
+            <h1 class="app-title">Let's begin!</h1>
+
+            <div class="divider"></div>
+
+            <div class="auth-wrapper" dir="rtl">
+                <div class="terms-checkbox-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" @bind="isTermsAccepted" @onclick="ClearErrorMessage" />
+                        <span>
+                            קראתי ואני מסכים/ה ל
+                            <span class="terms-link terms-highlight" @onclick="OpenTermsModal" @onclick:stopPropagation="true">
+                                תנאי השימוש
+                            </span>
+                            ולמדיניות המערכת
+                        </span>
+                    </label>
+                </div>
+
+                @if (!string.IsNullOrEmpty(authErrorMessage))
+                {
+                <p class="auth-error-message">
+                    @authErrorMessage
+                </p>
+                }
+
+                <div class="auth-buttons">
+                    <button class="btn-login google" @onclick="LoginWithGoogle">
+                        <img src="images/googleLogo.png" alt="אייקון של גוגל" />
+                        <span>התחברות באמצעות גוגל</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <img src="images/TedFriend_character-removebg-preview.png" class="your-mascot" alt="הדמות המלווה של המערכת" />
+
+</div>
+
+@* פופ-אפ תנאי שימוש (Modal) *@
+@if (showTermsModal)
+{
+    <div class="terms-modal-backdrop"></div>
+
+    <div class="terms-modal" tabindex="-1">
+        <div class="terms-modal-dialog">
+            <div class="terms-modal-content" dir="rtl">
+                
+                <div class="terms-modal-header">
+                    <h4 class="terms-modal-title">
+                        תנאי שימוש והסכמה לשימוש במערכת
+                    </h4>
+                </div>
+
+                <div class="terms-modal-body">
+                    <p>בהתחברות למערכת באמצעות חשבון Google, המשתמש/ת מאשר/ת כי כתובת הדוא״ל המשויכת לחשבון תישמר במערכת לצורך התחברות,זיהוי ושמירת התקדמות אישית.</p>
+                    <p>בנוסף, תוכן השיחות והתרגולים המתבצעים מול מערכת ה־AI עשוי להיות נגיש לצוות ההוראה, וזאת לצורך ליווי הלמידה,מתן סיוע אישי ושיפור חוויית הלמידה של התלמידים/ות.</p>
+                    <p>המערכת מיועדת לשימוש לימודי בלבד, ואין לשתף בה מידע אישי רגיש.</p>
+                    <p class="terms-modal-strong">המשך השימוש במערכת מהווה הסכמה לתנאים אלו.</p>
+                </div>
+
+                <div class="terms-modal-footer">
+                    <button type="button" class="terms-modal-button" @onclick="CloseTermsModal">
+                        הבנתי, תודה
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isTermsAccepted = false; // מעקב אחר סטטוס אישור תנאי השימוש על ידי המשתמש
+    private bool showTermsModal = false;   // שליטה על מצב תצוגת הפופ-אפ (Modal Visibility) במסך
+    private string authErrorMessage = ""; // החזקת הודעות שגיאה לצורך חיווי למשתמש (User Feedback)
+
+    //פונקציית התחברות באמצעות גוגל
+    private void LoginWithGoogle()
+    {
+        // אימות אישור תנאי השימוש
+        if (!isTermsAccepted)
+        {
+            authErrorMessage = "אופס, צריך לאשר את תנאי השימוש קודם";
+            return; // עצירת ה-Execution Flow ומניעת קריאה לשרת ללא אישור
+        }
+
+        authErrorMessage = ""; // איפוס הודעות שגיאה לפני יציאה לנתיב הניווט
+        
+        // ביצוע הפנייה מלאה (Server-side Redirect) לקצה השרת (API Controller) לצורך תהליך ההתחברות  מול גוגל
+        Navigation.NavigateTo("api/google/login", forceLoad: true);
+    }
+    
+    // שינוי מצב המשתנה לצורך הצגת פופ-אפ תנאי השימוש (Modal Window)
+    private void OpenTermsModal()
+    {
+        showTermsModal = true;
+    }
+    
+    // שינוי מצב המשתנה לצורך סגירת פופ-אפ תנאי השימוש (Modal Window)
+    private void CloseTermsModal()
+    {
+        showTermsModal = false;
+    }
+    
+    //פונקציה לניקוי הודעות שגיאה ברגע שהמשתמש משנה את מצב תיבת הסימון.
+    private void ClearErrorMessage()
+    {
+        authErrorMessage = "";
+    }
+}

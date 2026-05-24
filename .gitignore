@@ -1,0 +1,20 @@
+# IDE Settings
+.idea/
+.vscode/
+.vs/
+
+# Build and Temporary Files
+bin/
+obj/
+
+# Sensitive Configs (חובה להגנה!)
+appsettings.json
+appsettings.*.json
+
+# Node modules & Packages
+node_modules/
+packages/
+
+# Misc
+*.user
+*.userosscache

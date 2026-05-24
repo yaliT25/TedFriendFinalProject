@@ -1,0 +1,953 @@
+/* ===== Feedback Student Page - x2.75 Upscaled ===== */
+
+.feedback-page {
+    width: 100%;
+    min-height: 100svh;
+
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    direction: rtl;
+    font-family: 'Fredoka', sans-serif;
+
+    background-image: url("images/AppBackground.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    box-sizing: border-box;
+    padding: 5.5rem;
+}
+
+.feedback-page *,
+.feedback-page *::before,
+.feedback-page *::after {
+    box-sizing: border-box;
+}
+
+/* ===== Back Button ===== */
+
+.feedback-back-button {
+    position: fixed;
+    top: 4.4rem;
+    right: 4.4rem;
+
+    width: 29.665rem;
+    height: 7.39063rem;
+
+    border: none;
+    border-radius: 3.95313rem;
+    background: #F9FDFF;
+    box-shadow: 8.25px 11px 9.625px 0 rgba(0, 0, 0, 0.17);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5125rem;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2.75rem;
+    font-weight: 600;
+
+    cursor: pointer;
+    z-index: 20;
+}
+
+.feedback-back-button img {
+    width: 3.4375rem;
+    height: 3.4375rem;
+    object-fit: contain;
+    display: block;
+}
+
+/* ===== Main Layout ===== */
+
+.feedback-content {
+    width: min(286rem, calc(100vw - 11rem));
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding-block: 1.375rem 8.25rem;
+}
+
+.feedback-logo {
+    width: clamp(38.5rem, 55vw, 66rem);
+    height: auto;
+    object-fit: contain;
+
+    margin-bottom: 5.5rem;
+}
+
+/* ===== Loading ===== */
+
+.feedback-loading-card {
+    width: min(115.5rem, 100%);
+    min-height: 44rem;
+
+    border-radius: 4.98438rem;
+    background: #FFF;
+    box-shadow: 11px 11px 11px 0 rgba(0, 0, 0, 0.20);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.75rem;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 3.85rem;
+    font-weight: 600;
+}
+
+.feedback-loader {
+    width: 8.25rem;
+    height: 8.25rem;
+    border-radius: 50%;
+    border: 0.9625rem solid rgba(40, 73, 139, 0.25);
+    border-top-color: #28498B;
+    animation: feedback-spin 0.9s linear infinite;
+}
+
+@keyframes feedback-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== Score Cards ===== */
+
+.feedback-scores-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8.25rem;
+
+    margin-bottom: 8.25rem;
+}
+
+.score-card {
+    width: 100%;
+    min-height: 49.15625rem;
+
+    border-radius: 4.98438rem;
+    background: #FFF;
+    box-shadow: 11px 11px 11px 0 rgba(0, 0, 0, 0.20);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 5.5rem;
+    text-align: center;
+}
+
+.score-card h2 {
+    margin: 0;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: clamp(6.325rem, 7.425vw, 10.45rem);
+    font-weight: 700;
+    line-height: 1.05;
+}
+
+.score-subtitle {
+    margin: 0.9625rem 0 0;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: clamp(3.4375rem, 4.125vw, 5.5rem);
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.score-number {
+    margin-top: 1.925rem;
+
+    color: #1E945D;
+    font-family: 'Fredoka', sans-serif;
+    font-size: clamp(9.625rem, 11vw, 15.95rem);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.score-dots {
+    margin-top: 3.4375rem;
+
+    display: flex;
+    flex-direction: row;
+    direction: rtl;
+    justify-content: center;
+    align-items: center;
+    gap: 1.7875rem;
+}
+
+.score-dot {
+    width: 4.2221rem;
+    height: 4.2221rem;
+
+    border-radius: 50%;
+    background: #D9D9D9;
+    display: block;
+}
+
+.score-dot.active {
+    background: #1E945D;
+}
+
+/* ===== Bottom Two Panels ===== */
+
+.feedback-bottom-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8.25rem;
+
+    align-items: stretch;
+}
+
+/* ===== Tips Panel ===== */
+
+.tips-panel {
+    position: relative;
+
+    width: 100%;
+    min-height: 92.6623rem;
+
+    border-radius: 4.98438rem;
+    background: #F8D172;
+    box-shadow: 11px 11px 11px 0 rgba(0, 0, 0, 0.20);
+
+    padding: 12.65rem 6.325rem 6.05rem;
+
+    overflow: visible;
+}
+
+.tips-mascot {
+    position: absolute;
+    top: -20rem;
+    right: 6.875rem;
+
+    width: clamp(22rem, 27.5vw, 33rem);
+    height: auto;
+    object-fit: contain;
+
+    z-index: 2;
+}
+
+.tips-header {
+    position: relative;
+    z-index: 3;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2.75rem;
+
+    margin-bottom: 5.5rem;
+}
+
+.tips-header img {
+    width: 9.625rem;
+    height: 9.625rem;
+    object-fit: contain;
+}
+
+.tips-header h2 {
+    margin: 0;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: clamp(5.5rem, 6.6vw, 8.8rem);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.advice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4.125rem;
+}
+
+.advice-box {
+    position: relative;
+
+    min-height: 27.5rem;
+
+    border-radius: 5.67188rem;
+    opacity: 0.85;
+    background: #FFF;
+    box-shadow: 11px 11px 17.325px 0 rgba(0, 0, 0, 0.25);
+
+    padding: 4.4rem 5.5rem 4.4rem 17.875rem;
+}
+
+.advice-text h3 {
+    margin: 0 0 1.65rem;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: clamp(3.9875rem, 4.4vw, 5.775rem);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.advice-text p {
+    margin: 0;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: clamp(3.025rem, 3.4375vw, 4.2625rem);
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.advice-side-icon {
+    position: absolute;
+    left: 4.125rem;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 10.175rem;
+    height: 10.175rem;
+    object-fit: contain;
+}
+
+.no-feedback-box {
+    min-height: 49.5rem;
+
+    border-radius: 5.67188rem;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 11px 11px 17.325px 0 rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3.85rem;
+
+    padding: 5.5rem;
+    text-align: center;
+}
+
+.no-feedback-box p {
+    margin: 0;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 4.4rem;
+    font-weight: 700;
+}
+
+.practice-return-button {
+    min-width: 44rem;
+    min-height: 9.9rem;
+
+    border: none;
+    border-radius: 4.95rem;
+    background: #28498B;
+    color: #FFF;
+
+    font-family: 'Fredoka', sans-serif;
+    font-size: 3.3rem;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+/* ===== Teacher Help Panel ===== */
+
+.teacher-help-panel {
+    width: 100%;
+    min-height: 92.2512rem;
+
+    border-radius: 4.98438rem;
+    background: #28498B;
+    box-shadow: 11px 11px 11px 0 rgba(0, 0, 0, 0.20);
+
+    padding: 7.15rem 6.6rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.teacher-help-panel h2 {
+    margin: 0 0 6.05rem;
+
+    color: #FFF;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: clamp(5.5rem, 6.325vw, 8.25rem);
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.rating-options {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3.3rem;
+
+    margin-bottom: 5.5rem;
+    align-items: start;
+}
+
+.rating-option {
+    min-height: auto;
+
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.4rem;
+
+    padding: 1.5rem 1rem;
+
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+
+    transition: transform 0.2s ease;
+}
+
+.rating-option img {
+    width: 13.2rem;
+    height: 13.2rem;
+    object-fit: contain;
+    display: block;
+
+    transition: transform 0.2s ease;
+    transform-origin: center center;
+}
+
+.rating-option span {
+    color: #FFF;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 4.95rem;
+    font-weight: 700;
+    line-height: 1.1;
+
+    transition: transform 0.2s ease, color 0.2s ease;
+    transform-origin: center center;
+}
+
+/* hover */
+.rating-option:hover img,
+.rating-option:hover span {
+    transform: scale(1.2);
+}
+
+/* selected */
+.rating-option.selected img,
+.rating-option.selected span {
+    transform: scale(1.2);
+}
+
+/* אם את רוצה שהנבחר יהיה אפילו יותר מודגש */
+.rating-option.selected span {
+    color: #F2CA52;
+}
+
+/* כדי שלא יהיה outline של הדפדפן */
+.rating-option:focus {
+    outline: none;
+}
+
+.rating-option:focus-visible {
+    outline: none;
+}
+
+.teacher-comment-input {
+    width: 100%;
+    min-height: 23.375rem;
+
+    border: none;
+    outline: none;
+    resize: none;
+
+    border-radius: 4.4rem;
+    background: #FFF;
+    box-shadow: inset 0 0 0 5.5px rgba(0, 0, 0, 0.08);
+
+    padding: 3.575rem 4.4rem;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 3.9875rem;
+    font-weight: 500;
+    line-height: 1.35;
+
+    text-align: right;
+}
+
+.teacher-comment-input::placeholder {
+    color: rgba(0, 0, 0, 0.58);
+}
+
+/* ===== Final Save Button ===== */
+
+.final-save-button {
+    width: min(96.07813rem, 100%);
+    height: 15.29688rem;
+
+    margin-top: 8.25rem;
+
+    border: none;
+    border-radius: 5.15625rem;
+    background: #1E945D;
+    box-shadow: 11px 11px 11px 0 rgba(0, 0, 0, 0.20);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2.75rem;
+
+    color: #FFF;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 4.8125rem;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.final-save-button img {
+    width: 6.325rem;
+    height: 6.325rem;
+    object-fit: contain;
+}
+
+.final-save-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.feedback-required-message {
+    margin: 2.75rem 0 0;
+
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2.75rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* ===== Responsive - Tablet / iPad ===== */
+
+@media (max-width: 1200px) {
+    .feedback-page {
+        padding: 1.5rem;
+        min-height: 100svh;
+        overflow-y: auto;
+    }
+
+    .feedback-content {
+        width: 100%;
+        padding-top: 3.5rem;
+        padding-bottom: 2rem;
+    }
+
+    .feedback-back-button {
+        top: 1rem;
+        right: 1rem;
+
+        width: 10rem;
+        height: 2.6rem;
+
+        border-radius: 1.4rem;
+        gap: 0.5rem;
+
+        font-size: 0.95rem;
+        box-shadow: 3px 4px 3.5px 0 rgba(0, 0, 0, 0.17);
+    }
+
+    .feedback-back-button img {
+        width: 1.15rem;
+        height: 1.15rem;
+    }
+
+    .feedback-logo {
+        width: min(18rem, 55vw);
+        margin-bottom: 1.5rem;
+    }
+
+    .feedback-scores-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .score-card {
+        min-height: 13rem;
+        border-radius: 1.5rem;
+        padding: 1.25rem;
+        box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.20);
+    }
+
+    .score-card h2 {
+        font-size: 1.9rem;
+    }
+
+    .score-subtitle {
+        margin-top: 0.25rem;
+        font-size: 1rem;
+    }
+
+    .score-number {
+        margin-top: 0.45rem;
+        font-size: 3.8rem;
+    }
+
+    .score-dots {
+        margin-top: 0.8rem;
+        gap: 0.45rem;
+    }
+
+    .score-dot {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .feedback-bottom-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .tips-panel,
+    .teacher-help-panel {
+        min-height: auto;
+        border-radius: 1.5rem;
+        box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.20);
+    }
+
+    .tips-panel {
+        padding: 3.6rem 1.4rem 1.4rem;
+    }
+
+    .tips-mascot {
+        width: 7rem;
+        top: -4.2rem;
+        right: 1.2rem;
+    }
+
+    .tips-header {
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .tips-header img {
+        width: 2.4rem;
+        height: 2.4rem;
+    }
+
+    .tips-header h2 {
+        font-size: 1.9rem;
+    }
+
+    .advice-list {
+        gap: 1rem;
+    }
+
+    .advice-box {
+        min-height: auto;
+        border-radius: 1.5rem;
+        padding: 1.15rem 1.2rem 1.15rem 4.4rem;
+        box-shadow: 4px 4px 6.3px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .advice-text h3 {
+        margin-bottom: 0.35rem;
+        font-size: 1.25rem;
+    }
+
+    .advice-text p {
+        font-size: 1rem;
+        line-height: 1.35;
+    }
+
+    .advice-side-icon {
+        width: 2.6rem;
+        height: 2.6rem;
+        left: 1rem;
+    }
+
+    .teacher-help-panel {
+        padding: 1.5rem;
+    }
+
+    .teacher-help-panel h2 {
+        margin-bottom: 1.3rem;
+        font-size: 1.9rem;
+    }
+
+    .rating-options {
+        gap: 1rem;
+        margin-bottom: 1.3rem;
+    }
+
+    .rating-option {
+        min-height: auto;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    .rating-option img {
+        width: 4rem;
+        height: 4rem;
+    }
+
+    .rating-option span {
+        color: #FFF;
+        font-size: 1.35rem;
+    }
+
+    .rating-option:hover img,
+    .rating-option:hover span,
+    .rating-option.selected img,
+    .rating-option.selected span {
+        transform: scale(1.25);
+    }
+
+    .rating-option.selected span {
+        color: #F2CA52;
+    }
+
+    .teacher-comment-input {
+        min-height: 7rem;
+        border-radius: 1.3rem;
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .final-save-button {
+        width: min(28rem, 100%);
+        height: 4.5rem;
+
+        margin-top: 1.5rem;
+
+        border-radius: 1.5rem;
+        gap: 0.75rem;
+
+        font-size: 1.25rem;
+        box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.20);
+    }
+
+    .final-save-button img {
+        width: 1.7rem;
+        height: 1.7rem;
+    }
+
+    .feedback-required-message {
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+
+/* ===== Responsive - Mobile ===== */
+
+@media (max-width: 760px) {
+    .feedback-page {
+        padding: 0.85rem;
+    }
+
+    .feedback-content {
+        padding-top: 3rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .feedback-back-button {
+        width: 8.6rem;
+        height: 2.25rem;
+
+        border-radius: 1.2rem;
+        font-size: 0.78rem;
+        gap: 0.35rem;
+    }
+
+    .feedback-back-button img {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .feedback-logo {
+        width: min(12rem, 70vw);
+        margin-bottom: 1rem;
+    }
+
+    .feedback-scores-grid {
+        grid-template-columns: 1fr;
+        gap: 0.9rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .score-card {
+        min-height: 10.5rem;
+        border-radius: 1.25rem;
+        padding: 1rem;
+    }
+
+    .score-card h2 {
+        font-size: 1.55rem;
+    }
+
+    .score-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .score-number {
+        font-size: 2.8rem;
+    }
+
+    .score-dots {
+        gap: 0.32rem;
+        margin-top: 0.7rem;
+    }
+
+    .score-dot {
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+
+    .feedback-bottom-grid {
+        grid-template-columns: 1fr;
+        gap: 0.9rem;
+    }
+
+    .tips-panel {
+        border-radius: 1.25rem;
+        padding: 3rem 0.9rem 0.9rem;
+    }
+
+    .tips-mascot {
+        width: 5.5rem;
+        top: -3.2rem;
+        right: 0.9rem;
+    }
+
+    .tips-header {
+        gap: 0.5rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .tips-header img {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .tips-header h2 {
+        font-size: 1.35rem;
+    }
+
+    .advice-list {
+        gap: 0.75rem;
+    }
+
+    .advice-box {
+        border-radius: 1.15rem;
+        padding: 0.9rem 0.9rem 0.9rem 3.5rem;
+    }
+
+    .advice-text h3 {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .advice-text p {
+        font-size: 0.85rem;
+        line-height: 1.35;
+    }
+
+    .advice-side-icon {
+        width: 2.1rem;
+        height: 2.1rem;
+        left: 0.75rem;
+    }
+
+    .teacher-help-panel {
+        border-radius: 1.25rem;
+        padding: 1rem;
+    }
+
+    .teacher-help-panel h2 {
+        font-size: 1.35rem;
+        margin-bottom: 1rem;
+    }
+
+    .rating-options {
+        gap: 0.6rem;
+        margin-bottom: 1rem;
+    }
+
+    .rating-option {
+        padding: 0.35rem;
+        gap: 0.35rem;
+    }
+
+    .rating-option img {
+        width: 2.7rem;
+        height: 2.7rem;
+    }
+
+    .rating-option span {
+        font-size: 0.95rem;
+    }
+
+    .rating-option:hover img,
+    .rating-option:hover span,
+    .rating-option.selected img,
+    .rating-option.selected span {
+        transform: scale(1.2);
+    }
+
+    .teacher-comment-input {
+        min-height: 6rem;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+        padding: 0.85rem;
+    }
+
+    .final-save-button {
+        width: 100%;
+        height: 3.8rem;
+
+        margin-top: 1rem;
+
+        border-radius: 1.25rem;
+        gap: 0.5rem;
+
+        font-size: 1rem;
+    }
+
+    .final-save-button img {
+        width: 1.35rem;
+        height: 1.35rem;
+    }
+
+    .feedback-required-message {
+        font-size: 0.8rem;
+    }
+}

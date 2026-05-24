@@ -1,0 +1,913 @@
+/* ===== Chat Page - Clean Responsive Version ===== */
+
+.chat-page {
+    width: 100%;
+    min-height: 100svh;
+    height: 100svh;
+    overflow: hidden;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 70rem;
+
+    background-image: url("images/AppBackground.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    font-family: 'Assistant', sans-serif;
+    box-sizing: border-box;
+}
+
+.chat-page *,
+.chat-page *::before,
+.chat-page *::after {
+    box-sizing: border-box;
+}
+
+/* ===== Right Sidebar ===== */
+
+.chat-sidebar {
+    grid-column: 2;
+
+    width: 70rem;
+    height: 100svh;
+
+    background: rgba(255, 255, 255, 0.50);
+    box-shadow: -5px -2px 16.3px 1px rgba(0, 0, 0, 0.15);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 3.75rem 4.375rem 4.375rem;
+
+    position: relative;
+    z-index: 3;
+}
+
+.chat-exit-button {
+    position: absolute;
+    top: 3.125rem;
+    right: 3.125rem;
+
+    width: 6.25rem;
+    height: 6.25rem;
+
+    border: none;
+    background: transparent;
+    padding: 0;
+
+    cursor: pointer;
+}
+
+.chat-exit-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.chat-topic-header {
+    width: 100%;
+    margin-top: 7.5rem;
+    margin-bottom: 5rem;
+
+    text-align: center;
+}
+
+.chat-topic-header span {
+    display: block;
+
+    color: #2F2F2F;
+    font-family: 'Assistant', sans-serif;
+    font-size: 3.75rem;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.chat-topic-header h2 {
+    color: #000;
+    font-family: 'Assistant', sans-serif;
+    font-size: 5.25rem;
+    font-weight: 700;
+    line-height: 1.1;
+
+    margin: 0.75rem 0 0;
+}
+
+/* ===== Phase Cards ===== */
+
+.chat-phase-nav {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+}
+
+.phase-card {
+    width: 60rem;
+    min-height: 25rem;
+
+    border: none;
+    border-radius: 5.75rem;
+    background: rgba(255, 255, 255, 0.50);
+    box-shadow: 2px 2px 4px 1px rgba(0, 0, 0, 0.25);
+
+    padding: 3rem 3.25rem;
+
+    display: grid;
+    grid-template-columns: 10.625rem minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: flex-start;
+
+    text-align: right;
+    cursor: pointer;
+
+    font-family: 'Assistant', sans-serif;
+}
+
+.phase-card.active {
+    border: 3px solid #3A237D;
+    background: rgba(255, 255, 255, 0.50);
+    box-shadow: 1px 1px 10.3px 5px rgba(0, 0, 0, 0.20);
+}
+
+/* ===== Real Phase Icons From Images ===== */
+
+.phase-icon {
+    width: 10.625rem;
+    height: 10.625rem;
+
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
+
+    flex-shrink: 0;
+    display: block;
+}
+
+/* ביטול כל האייקונים הישנים שצוירו ב-CSS */
+.phase-play-icon::before,
+.phase-play-icon::after,
+.phase-body-icon::before,
+.phase-body-icon::after,
+.phase-end-icon::before,
+.phase-end-icon::after,
+.phase-voice-icon::before,
+.phase-voice-icon::after {
+    content: none !important;
+    display: none !important;
+}
+
+.phase-play-icon {
+    background-image: url("images/openPICON.png");
+}
+
+.phase-body-icon {
+    background-image: url("images/BodyPICON.png");
+}
+
+.phase-end-icon {
+    background-image: url("images/EndPICON.png");
+}
+
+.phase-voice-icon {
+    background-image: url("images/voicePICON.png");
+}
+
+.phase-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.phase-copy strong {
+    color: #000;
+    font-family: 'Assistant', sans-serif;
+    font-size: 4.75rem;
+    font-weight: 700;
+    line-height: 1.05;
+    margin-bottom: 1.25rem;
+}
+
+.phase-copy small {
+    color: #4D4D4D;
+    font-family: 'Assistant', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+/* ===== Finish Button ===== */
+
+.finish-summary-button {
+    width: 60rem;
+    min-height: 12.5rem;
+
+    margin-top: auto;
+
+    border: none;
+    border-radius: 1.3125rem;
+    background: #F2CA52;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+
+    color: #000;
+    font-family: 'Assistant', sans-serif;
+    font-size: 4.25rem;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.finish-summary-button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* ===== Main Chat Area ===== */
+
+.chat-main {
+    grid-column: 1;
+
+    height: 100svh;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 2.5rem 10rem 3.75rem;
+
+    overflow: hidden;
+}
+
+.chat-logo {
+    width: 42.5rem;
+    max-width: none;
+    height: auto;
+
+    align-self: center;
+    object-fit: contain;
+
+    margin-bottom: 2.5rem;
+}
+
+/* ===== Messages Area ===== */
+
+.chat-messages {
+    flex: 1;
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4.375rem;
+
+    padding: 1.25rem 1rem 2.5rem;
+}
+
+/* ===== Message Rows ===== */
+
+.chat-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 2.25rem;
+
+    max-width: min(137.5rem, 94%);
+}
+
+.ai-row {
+    align-self: flex-start;
+}
+
+.student-row {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.chat-avatar {
+    width: 10.625rem;
+    height: 10.625rem;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.message-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.message-bubble {
+    max-width: 100%;
+    padding: 3.125rem 3.75rem;
+}
+
+.message-bubble p {
+    margin: 0;
+}
+
+.ai-bubble {
+    border-radius: 0 6.25rem 6.25rem 6.25rem;
+    background: #FFF;
+    box-shadow: 0 4px 1.5px 0 rgba(0, 0, 0, 0.25);
+
+    color: #000;
+    font-family: 'Assistant', sans-serif;
+    font-size: 3.875rem;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.student-bubble {
+    border-radius: 0 6.25rem 6.25rem 6.25rem;
+    background: #513996;
+    box-shadow: 0 4px 0.6px 0 rgba(0, 0, 0, 0.25);
+
+    color: #FFF;
+    font-family: 'Assistant', sans-serif;
+    font-size: 4.25rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 130.918%;
+}
+
+/* ===== AI Actions ===== */
+
+.message-actions {
+    display: flex;
+    gap: 1.875rem;
+
+    margin-top: 1.75rem;
+    margin-left: 0.625rem;
+}
+
+.message-action-button {
+    width: 7.5rem;
+    height: 7.5rem;
+
+    border-radius: 50%;
+    border: 3px solid #3A237D;
+    background: #FFF;
+    filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+    cursor: pointer;
+}
+
+.message-action-button svg {
+    width: 4.125rem !important;
+    height: 4.125rem !important;
+    max-width: none;
+    max-height: none;
+    display: block;
+}
+
+/* ===== Translation ===== */
+
+.translation-divider {
+    width: 100%;
+    height: 0;
+    border-top: 2px solid rgba(0, 0, 0, 0.20);
+
+    margin: 2.5rem 0;
+}
+
+.translation-text {
+    color: #333;
+    font-family: 'Assistant', sans-serif;
+    font-size: 3.1875rem;
+    line-height: 1.45;
+    text-align: right;
+}
+
+/* ===== Typing ===== */
+
+.typing-bubble {
+    color: #555;
+}
+
+/* ===== Input Area ===== */
+
+.chat-input-area {
+    width: 100%;
+    padding-top: 2.5rem;
+}
+
+.chat-input-box {
+    width: min(100%, 168.75rem);
+    min-height: 13.125rem;
+
+    margin-inline: auto;
+
+    border-radius: 5.625rem;
+    border: 1px solid rgba(0, 0, 0, 0.80);
+    background: #FFF;
+    box-shadow: 3px 3px 10px 0 rgba(0, 0, 0, 0.30);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2.5rem;
+
+    padding: 1.875rem 2.75rem 1.875rem 3.75rem;
+}
+
+.chat-text-input {
+    flex: 1;
+
+    border: none;
+    outline: none;
+    background: transparent;
+
+    color: #000;
+    font-family: 'Assistant', sans-serif;
+    font-size: 3.5rem;
+
+    direction: ltr;
+    text-align: left;
+}
+
+.chat-text-input::placeholder {
+    color: #222;
+    opacity: 1;
+    text-align: left;
+}
+
+.chat-send-button {
+    width: 8.125rem;
+    height: 8.125rem;
+
+    border: none;
+    background: transparent;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+.chat-send-button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.chat-send-button svg {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/* ===== Voice Practice ===== */
+
+.voice-practice-control {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3.6rem;
+    padding-block: 2rem;
+}
+
+.voice-practice-button {
+    width: 18.875rem;
+    height: 19.3945rem;
+
+    border: 10px solid #FFF;
+    border-radius: 4.375rem;
+
+    background: #513996;
+    box-shadow: 0 8px 2.8px rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+    cursor: pointer;
+
+    transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.voice-practice-button:hover {
+    transform: translateY(-0.3rem);
+}
+
+.voice-practice-button:active {
+    transform: translateY(0);
+}
+
+.voice-practice-button.recording {
+    background: #E3242B;
+}
+
+.voice-button-icon {
+    width: 10rem;
+    height: 10rem;
+    object-fit: contain;
+    display: block;
+}
+
+.voice-practice-button.recording .voice-button-icon {
+    width: 10.8rem;
+    height: 10.8rem;
+}
+
+.voice-practice-instruction {
+    margin: 0;
+
+    color: #000;
+    text-align: center;
+    font-family: 'Assistant', sans-serif;
+    font-size: 4.6rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+/* ===== Responsive - Tablet / iPad ===== */
+
+@media (max-width: 1200px) {
+    .chat-page {
+        height: auto;
+        min-height: 100svh;
+        overflow-y: auto;
+
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-sidebar {
+        order: 1;
+
+        width: 100%;
+        height: auto;
+        min-height: auto;
+
+        padding: 1.5rem;
+    }
+
+    .chat-exit-button {
+        top: 1.2rem;
+        right: 1.2rem;
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .chat-topic-header {
+        margin-top: 3.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .chat-topic-header span {
+        font-size: 1.6rem;
+    }
+
+    .chat-topic-header h2 {
+        font-size: 2rem;
+    }
+
+    .chat-phase-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .phase-card {
+        width: 100%;
+        min-height: 9rem;
+        border-radius: 2rem;
+
+        grid-template-columns: 4.5rem minmax(0, 1fr);
+        gap: 1rem;
+
+        padding: 1rem;
+    }
+
+    .phase-icon {
+        width: 4.5rem;
+        height: 4.5rem;
+        background-size: 62%;
+    }
+
+    .phase-copy strong {
+        font-size: 1.75rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .phase-copy small {
+        font-size: 0.95rem;
+        line-height: 1.25;
+    }
+
+    .finish-summary-button {
+        width: 100%;
+        min-height: 5rem;
+
+        margin-top: 1.25rem;
+
+        border-radius: 1.3125rem;
+        font-size: 1.65rem;
+    }
+
+    .chat-main {
+        order: 2;
+
+        height: auto;
+        min-height: calc(100svh - 22rem);
+
+        padding: 1.5rem;
+    }
+
+    .chat-logo {
+        width: min(18rem, 55vw);
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .chat-messages {
+        min-height: 45svh;
+        max-height: none;
+
+        gap: 1.6rem;
+        padding: 0.5rem 0.25rem 1rem;
+    }
+
+    .chat-row {
+        max-width: 100%;
+        gap: 0.9rem;
+    }
+
+    .chat-avatar {
+        width: 4rem;
+        height: 4rem;
+    }
+
+    .message-bubble {
+        padding: 1.2rem 1.4rem;
+    }
+
+    .ai-bubble {
+        font-size: 1.35rem;
+        border-radius: 0 2rem 2rem 2rem;
+    }
+
+    .student-bubble {
+        font-size: 1.45rem;
+        border-radius: 0 2rem 2rem 2rem;
+    }
+
+    .message-actions {
+        gap: 0.8rem;
+        margin-top: 0.8rem;
+    }
+
+    .message-action-button {
+        width: 3rem;
+        height: 3rem;
+        border-width: 2px;
+    }
+
+    .message-action-button svg {
+        width: 1.7rem !important;
+        height: 1.7rem !important;
+    }
+
+    .translation-divider {
+        margin: 1rem 0;
+    }
+
+    .translation-text {
+        font-size: 1.15rem;
+    }
+
+    .chat-input-box {
+        min-height: 5rem;
+        border-radius: 2rem;
+        gap: 1rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .chat-text-input {
+        font-size: 1.25rem;
+    }
+
+    .chat-send-button {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .voice-practice-control {
+        gap: 2rem;
+        padding-block: 1.25rem;
+    }
+
+    .voice-practice-button {
+        width: 10rem;
+        height: 10.3rem;
+        border-radius: 2.3rem;
+        border-width: 5px;
+    }
+
+    .voice-button-icon {
+        width: 5.4rem;
+        height: 5.4rem;
+    }
+
+    .voice-practice-button.recording .voice-button-icon {
+        width: 5.8rem;
+        height: 5.8rem;
+    }
+
+    .voice-practice-instruction {
+        font-size: 2rem;
+    }
+}
+
+/* ===== Responsive - Mobile ===== */
+
+@media (max-width: 650px) {
+    .chat-sidebar {
+        padding: 1rem;
+    }
+
+    .chat-exit-button {
+        top: 1rem;
+        right: 1rem;
+        width: 2.6rem;
+        height: 2.6rem;
+    }
+
+    .chat-topic-header {
+        margin-top: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .chat-topic-header span {
+        font-size: 1.2rem;
+    }
+
+    .chat-topic-header h2 {
+        font-size: 1.45rem;
+    }
+
+    .chat-phase-nav {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+
+    .phase-card {
+        min-height: 6.8rem;
+        border-radius: 1.4rem;
+
+        grid-template-columns: 3rem minmax(0, 1fr);
+        gap: 0.75rem;
+
+        padding: 0.85rem;
+    }
+
+    .phase-icon {
+        width: 3rem;
+        height: 3rem;
+        background-size: 62%;
+    }
+
+    .phase-copy strong {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .phase-copy small {
+        font-size: 0.78rem;
+        line-height: 1.22;
+    }
+
+    .finish-summary-button {
+        min-height: 3.8rem;
+        border-radius: 1.3125rem;
+        font-size: 1.25rem;
+    }
+
+    .chat-main {
+        padding: 0.85rem;
+    }
+
+    .chat-logo {
+        width: min(12rem, 70vw);
+    }
+
+    .chat-messages {
+        gap: 1.1rem;
+        padding: 0.4rem 0 0.8rem;
+    }
+
+    .chat-row {
+        max-width: 100%;
+        gap: 0.55rem;
+    }
+
+    .chat-avatar {
+        width: 2.8rem;
+        height: 2.8rem;
+    }
+
+    .message-bubble {
+        padding: 0.85rem 1rem;
+    }
+
+    .ai-bubble {
+        font-size: 0.95rem;
+        border-radius: 0 1.5rem 1.5rem 1.5rem;
+    }
+
+    .student-bubble {
+        font-size: 1rem;
+        border-radius: 0 1.5rem 1.5rem 1.5rem;
+    }
+
+    .message-actions {
+        gap: 0.55rem;
+        margin-top: 0.55rem;
+    }
+
+    .message-action-button {
+        width: 2.1rem;
+        height: 2.1rem;
+        border-width: 2px;
+    }
+
+    .message-action-button svg {
+        width: 1.2rem !important;
+        height: 1.2rem !important;
+    }
+
+    .translation-divider {
+        margin: 0.75rem 0;
+    }
+
+    .translation-text {
+        font-size: 0.9rem;
+    }
+
+    .chat-input-area {
+        padding-top: 0.8rem;
+    }
+
+    .chat-input-box {
+        min-height: 4rem;
+        border-radius: 1.4rem;
+        gap: 0.75rem;
+        padding: 0.7rem 0.9rem;
+    }
+
+    .chat-text-input {
+        font-size: 1rem;
+    }
+
+    .chat-send-button {
+        width: 2.2rem;
+        height: 2.2rem;
+    }
+
+    .voice-practice-control {
+        gap: 1.2rem;
+        padding-block: 1rem;
+    }
+
+    .voice-practice-button {
+        width: 7rem;
+        height: 7.2rem;
+        border-radius: 1.6rem;
+        border-width: 4px;
+    }
+
+    .voice-button-icon {
+        width: 3.8rem;
+        height: 3.8rem;
+    }
+
+    .voice-practice-button.recording .voice-button-icon {
+        width: 4.1rem;
+        height: 4.1rem;
+    }
+
+    .voice-practice-instruction {
+        font-size: 1.25rem;
+    }
+}
