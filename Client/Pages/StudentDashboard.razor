@@ -10,8 +10,11 @@
 
     <img src="images/logo_black-removebg-preview%20(1).png" class="dashboard-logo" alt="Logo" />
 
-    <button class="dashboard-exit-button" @onclick="GoToMainScreen" aria-label="יציאה למסך הכניסה">
-        <img src="images/leaveICON.png" alt="אייקון של חצי ריבוע וחץ שיוצא מכיוונו ומצביע על הכיוון הנגדי" />
+    <button class="page-nav-button"
+            @onclick="GoToMainScreen"
+            aria-label="חזרה למסך הכניסה">
+        <span>חזרה למסך הכניסה</span>
+        <img src="images/leaveICON.png" alt="" />
     </button>
 
     <div class="dashboard-layout">
@@ -38,33 +41,39 @@
                         .OrderBy(session => session.CreatedAt)
                         .Select((session, index) => new { Session = session, Number = index + 1 }))
                     {
-                        <div class="session-card" @onclick="() => NavigateToSession(item.Session)">
+                    <div class="session-card"
+                         tabindex="0"
+                         role="button"
+                         @onclick="() => NavigateToSession(item.Session)"
+                         @onkeydown="@((e) => HandleSessionKeyDown(e, item.Session))">
 
-                            <button class="session-delete-button"
-                                    @onclick:stopPropagation="true"
-                                    @onclick="() => OpenDeleteModal(item.Session)"
-                                    aria-label="מחיקת אימון">
-                                <img src="images/deleteICON.png" alt="אייקון של פח" />
-                            </button>
+                        @* הוספנו מניעת בעבוע לאירוע מקלדת כדי שמחיקה לא תיכנס בטעות לשיחה *@
+                        <button class="session-delete-button"
+                                @onclick:stopPropagation="true"
+                                @onclick="() => OpenDeleteModal(item.Session)"
+                                @onkeydown:stopPropagation="true"
+                                aria-label="מחיקת אימון">
+                            <img src="images/deleteICON.png" alt="אייקון של פח" />
+                        </button>
 
-                            <div class="session-progress" aria-label="שלב האימון">
-                                <span class="progress-dot @(item.Session.CurrentPhase >= 2 ? "active" : "")"></span>
-                                <span class="progress-dot @(item.Session.CurrentPhase >= 3 ? "active" : "")"></span>
-                                <span class="progress-dot @(item.Session.CurrentPhase >= 4 ? "active" : "")"></span>
-                            </div>
+                        <div class="session-progress" aria-label="שלב האימון">
+                            <span class="progress-dot @(item.Session.CurrentPhase >= 2 ? "active" : "")"></span>
+                            <span class="progress-dot @(item.Session.CurrentPhase >= 3 ? "active" : "")"></span>
+                            <span class="progress-dot @(item.Session.CurrentPhase >= 4 ? "active" : "")"></span>
+                        </div>
 
-                            <div class="session-main-info">
-                                <span class="topic-title">@item.Session.Topic</span>
-                                <span class="creation-date">
+                        <div class="session-main-info">
+                            <span class="topic-title">@item.Session.Topic</span>
+                            <span class="creation-date">
                                     @item.Session.CreatedAt.ToString("HH:mm | dd/MM/yy")
                                 </span>
-                            </div>
-
-                            <div class="session-index-circle">
-                                @item.Number
-                            </div>
-
                         </div>
+
+                        <div class="session-index-circle">
+                            @item.Number
+                        </div>
+
+                    </div>
                     }
                 </div>
             }
@@ -76,10 +85,16 @@
                 <h1>Hi @user?.Name</h1>
             </div>
 
-            <div class="new-practice-card">
+            <div class="new-practice-card"
+                 tabindex="0"
+                 role="button"
+                 @onclick="HandleCreateSession"
+                 @onkeydown="HandleNewPracticeKeyDown">
+
                 <div class="card-corner-blur"></div>
 
-                <button class="new-practice-button" @onclick="HandleCreateSession" aria-label="התחל אימון חדש">
+                @* הכפתור הפנימי הפך ל-tabindex="-1" כי עכשיו כל הכרטיסייה היא כפתור אחד ענק *@
+                <button class="new-practice-button" tabindex="-1" aria-label="התחל אימון חדש">
                     <img src="images/createNewICON.png" class="new-practice-icon" alt="אייקון של הסימן פלוס" />
                 </button>
 
@@ -268,5 +283,23 @@
         
         // ניווט פשוט למסך הכניסה
         Navigation.NavigateTo("/");
+    }
+    
+    // פונקציית ניווט מקלדת עבור כרטיסיית שיחה קיימת
+    private void HandleSessionKeyDown(KeyboardEventArgs e, ChatSession session)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            NavigateToSession(session);
+        }
+    }
+
+    // פונקציית ניווט מקלדת ליצירת אימון חדש (כעת עובדת על כל שטח הכרטיסייה)
+    private async Task HandleNewPracticeKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            await HandleCreateSession();
+        }
     }
 }

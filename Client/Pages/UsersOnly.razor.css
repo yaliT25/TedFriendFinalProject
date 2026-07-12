@@ -3,11 +3,12 @@
 .users-page-container {
     font-family: Fredoka, sans-serif;
 }
+
 .welcome-section h1 {
     font-family: 'Acme', sans-serif;
 }
 
-/* ===== Users Page Only ===== */
+/* ===== Users Page Only - Desktop adjusted for 100% zoom ===== */
 
 .users-page-container {
     position: relative;
@@ -19,7 +20,6 @@
     align-items: center;
     justify-content: center;
 
-    /* תמונת רקע */
     background-image: url("images/studentorteacherBG.png");
     background-size: cover;
     background-position: center;
@@ -50,30 +50,30 @@
 /* ===== Logo ===== */
 
 .users-main-logo {
-    width: clamp(38rem, 32vw, 50rem);
+    width: clamp(9.5rem, 32vw, 12.5rem);
     max-width: 64vw;
     height: auto;
     object-fit: contain;
 
-    margin-block-end: 2rem;
+    margin-block-end: 0.5rem;
 }
 
-/* ===== Main Card - same scale as previous login card ===== */
+/* ===== Main Card ===== */
 
 .users-card {
-    width: clamp(90rem, 78vw, 150rem);
-    min-height: clamp(48rem, 62vh, 80rem);
+    width: clamp(22.5rem, 78vw, 37.5rem);
+    min-height: clamp(12rem, 62vh, 20rem);
 
-    border-radius: clamp(8rem, 8vw, 16rem);
+    border-radius: clamp(2rem, 8vw, 4rem);
     background: #F8FAFC;
-    box-shadow: 8px 7px 11.3px 0 rgba(0, 0, 0, 0.25);
+    box-shadow: 2px 1.75px 2.825px 0 rgba(0, 0, 0, 0.25);
 
     display: flex;
     flex-direction: column;
     align-items: center;
 
-    padding-block: clamp(7rem, 9vh, 14rem);
-    padding-inline: clamp(10rem, 11vw, 21rem);
+    padding-block: clamp(1.75rem, 9vh, 3.5rem);
+    padding-inline: clamp(2.5rem, 11vw, 5.25rem);
 }
 
 /* ===== Titles ===== */
@@ -90,7 +90,7 @@
     color: #5E5B6A;
     text-align: center;
     font-family: Acme, sans-serif;
-    font-size: clamp(4rem, 3.4vw, 6rem);
+    font-size: clamp(1rem, 3.4vw, 1.5rem);
     font-style: normal;
     font-weight: 400;
     line-height: 126.644%;
@@ -101,7 +101,7 @@
     color: #28498B;
     text-align: center;
     font-family: Fredoka, sans-serif;
-    font-size: clamp(3rem, 2.4vw, 4rem);
+    font-size: clamp(0.75rem, 2.4vw, 1rem);
     font-style: normal;
     font-weight: 500;
     line-height: 121.042%;
@@ -111,13 +111,13 @@
 /* ===== Divider ===== */
 
 .users-divider {
-    width: 200rem;
+    width: 50rem;
     max-width: 100%;
-    height: 0.5rem;
+    height: 0.125rem;
     background: rgba(0, 0, 0, 0.15);
 
-    margin-block-start: 1.5rem;
-    margin-block-end: 5rem;
+    margin-block-start: 0.375rem;
+    margin-block-end: 1.25rem;
 
     flex-shrink: 0;
 }
@@ -130,32 +130,32 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: clamp(5rem, 6vw, 10rem);
+    gap: clamp(1.25rem, 6vw, 2.5rem);
 
-    margin-block-start: clamp(5rem, 6vh, 8rem);
+    margin-block-start: clamp(1.25rem, 6vh, 2rem);
 }
 
 .role-option {
-    width: clamp(34rem, 24vw, 46rem);
-    height: clamp(20rem, 14.2vw, 27.5rem);
+    width: clamp(8.5rem, 24vw, 11.5rem);
+    height: clamp(5rem, 14.2vw, 6.875rem);
 
-    border-radius: clamp(4rem, 4vw, 6.6rem);
-    border: 2px solid rgba(43, 76, 140, 0.18);
+    border-radius: clamp(1rem, 4vw, 1.65rem);
+    border: 1px solid rgba(43, 76, 140, 0.18);
     background: rgba(216, 235, 255, 0.50);
 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(1.5rem, 2vh, 3rem);
+    gap: clamp(0.375rem, 2vh, 0.75rem);
 
-    padding: clamp(2rem, 2vw, 4rem);
+    padding: clamp(0.5rem, 2vw, 1rem);
 
     cursor: pointer;
 }
 
 .role-icon {
-    width: clamp(10rem, 8vw, 16rem);
+    width: clamp(2.5rem, 8vw, 4rem);
     height: auto;
     object-fit: contain;
     flex: 0 0 auto;
@@ -165,7 +165,7 @@
     color: #28498B;
     text-align: center;
     font-family: Fredoka, sans-serif;
-    font-size: clamp(3rem, 2.5vw, 4.5rem);
+    font-size: clamp(0.75rem, 2.5vw, 1.125rem);
     font-style: normal;
     font-weight: 500;
     line-height: 121.042%;
@@ -175,10 +175,10 @@
 
 .users-mascot {
     position: absolute;
-    left: 10rem;
+    left: 2.5rem;
     bottom: 0;
 
-    width: clamp(48rem, 36vw, 70rem);
+    width: clamp(12rem, 36vw, 17.5rem);
     max-width: 80vw;
     height: auto;
 
@@ -203,11 +203,11 @@
 
 .users-login-btn {
     border: none;
-    border-radius: 5rem;
+    border-radius: 1.25rem;
     background: #28498B;
     color: #fff;
 
-    padding: 2rem 5rem;
+    padding: 0.5rem 1.25rem;
     cursor: pointer;
 }
 

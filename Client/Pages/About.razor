@@ -1,0 +1,102 @@
+@page "/About"
+@inject NavigationManager Navigation
+
+<div class="about-page" dir="rtl">
+
+    <main class="about-content">
+
+        <h1 class="about-title">אודות</h1>
+
+        <section class="about-card">
+
+            <button class="page-nav-button about-nav-button"
+                    @onclick="GoToHome"
+                    aria-label="חזרה למסך הבית">
+                <img src="images/leaveICON.png" alt="אייקון של חצי ריבוע ממנו יוצא חץ לכיוון הנגדי" />
+                <span>חזרה למסך הבית</span>
+            </button>
+
+            <img src="images/side_peak.png"
+                 class="about-side-mascot"
+                 alt="הדמות המלווה של המערכת" />
+
+            <div class="about-card-main">
+
+                <img src="images/logo_black-removebg-preview%20(1).png"
+                     class="about-main-logo"
+                     alt="הלוגו של המערכת. רובוט מציץ ומנופף מעל שם הממשק." />
+
+                <p class="about-description">
+                    <strong>TedFriend</strong> - מערכת דיגיטלית לתלמידי כיתות ד׳–ו׳,
+                    המסייעת ליצור, לתרגל ולשפר פרזנטציה באנגלית בסגנון TED TALK
+                    בעזרת צ׳אטבוט AI, אימון קולי ומשוב מסכם.
+                </p>
+
+                <h2 class="about-project-title">פרויקט גמר, תשע”ז</h2>
+
+                <a class="about-faculty-link"
+                   href="#"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    הפקולטה לטכנולוגיות למידה
+                </a>
+
+                <div class="about-info-row">
+
+                    <img src="images/HIT.png"
+                         class="about-hit-logo"
+                         alt="לוגו מכון טכנולוגי חולון HIT" />
+
+                    <div class="about-team-details">
+
+                        <section>
+                            <h3>צוות הפרויקט:</h3>
+                            <p>יהלי טוכלר ועידן מרום</p>
+                        </section>
+
+                        <section>
+                            <h3>צוות ההנחייה:</h3>
+                            <p>עדי סילאגי וד"ר דן כהן וקס</p>
+                        </section>
+
+                    </div>
+
+                    <aside class="about-classi-card">
+
+                        <div class="about-classi-text">
+                            <p>
+                                בשיתוף עם Classi -
+                                <br />
+                                חוגי העשרה באנגלית
+                                <br />
+                                נציג הארגון: ליאל אברמוביץ
+                            </p>
+                        </div>
+
+                        <img src="images/classiLOGOowl.png"
+                             class="about-classi-logo"
+                             alt="הלוגו של התוכנית. ינשוף ומתחתיו הכיתוב CLASSI" />
+
+                    </aside>
+
+                </div>
+
+            </div>
+
+            <footer class="about-footer">
+                 תוצר זה פותח בעזרת מנועי בינה מלאכותית כגון Gemini, ChatGPT.
+                © כל הזכויות שמורות למכון טכנולוגי חולון HIT
+            </footer>
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    private void GoToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

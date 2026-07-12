@@ -9,6 +9,7 @@ using System.Text;
 using BlazorGoogleLogin.Server.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseStaticWebAssets();
 
 // Add services to the container.
 

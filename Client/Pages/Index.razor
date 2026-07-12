@@ -3,8 +3,15 @@
 
 <div class="landing-container">
 
+    <button class="about-info-button"
+            @onclick="GoToAbout"
+            aria-label="מעבר לעמוד אודות">
+        <img src="images/INFObutton.png" alt="אייקון סגול עם האות i" />
+        <span class="about-info-tooltip">אודות</span>
+    </button>
+
     <div class="landing-content">
-        <img src="images/logo_black-removebg-preview%20(1).png" class="main-logo" alt="לוגו המערכת קלאסי" />
+        <img src="images/logo_black-removebg-preview%20(1).png" class="main-logo" alt="לוגו המערכת קלאסי"/>
 
         <div class="login-card">
             <h1 class="app-title">Let's begin!</h1>
@@ -14,27 +21,32 @@
             <div class="auth-wrapper" dir="rtl">
                 <div class="terms-checkbox-section">
                     <label class="checkbox-label">
-                        <input type="checkbox" @bind="isTermsAccepted" @onclick="ClearErrorMessage" />
+                        <input type="checkbox" @bind="isTermsAccepted" @onclick="ClearErrorMessage"/>
                         <span>
-                            קראתי ואני מסכים/ה ל
-                            <span class="terms-link terms-highlight" @onclick="OpenTermsModal" @onclick:stopPropagation="true">
-                                תנאי השימוש
-                            </span>
-                            ולמדיניות המערכת
-                        </span>
+            קראתי ואני מסכים/ה ל
+            <span class="terms-link terms-highlight"
+                  tabindex="0"
+                  @onclick="OpenTermsModal"
+                  @onclick:stopPropagation="true"
+                  @onkeydown="HandleTermsKeyDown"
+                  @onkeydown:stopPropagation="true">
+                תנאי השימוש
+            </span>
+            ולמדיניות המערכת
+        </span>
                     </label>
                 </div>
 
                 @if (!string.IsNullOrEmpty(authErrorMessage))
                 {
-                <p class="auth-error-message">
-                    @authErrorMessage
-                </p>
+                    <p class="auth-error-message">
+                        @authErrorMessage
+                    </p>
                 }
 
                 <div class="auth-buttons">
                     <button class="btn-login google" @onclick="LoginWithGoogle">
-                        <img src="images/googleLogo.png" alt="אייקון של גוגל" />
+                        <img src="images/googleLogo.png" alt="אייקון של גוגל"/>
                         <span>התחברות באמצעות גוגל</span>
                     </button>
                 </div>
@@ -42,7 +54,7 @@
         </div>
     </div>
 
-    <img src="images/TedFriend_character-removebg-preview.png" class="your-mascot" alt="הדמות המלווה של המערכת" />
+    <img src="images/TedFriend_character-removebg-preview.png" class="your-mascot" alt="הדמות המלווה של המערכת"/>
 
 </div>
 
@@ -117,4 +129,19 @@
     {
         authErrorMessage = "";
     }
+    
+    private void GoToAbout()
+    {
+        Navigation.NavigateTo("/About");
+    }
+    
+    private void HandleTermsKeyDown(KeyboardEventArgs e)
+    {
+        // בדיקה אם המשתמש לחץ על אנטר או רווח כשהפוקוס היה על המילה "תנאי השימוש"
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            OpenTermsModal();
+        }
+    }
+    
 }

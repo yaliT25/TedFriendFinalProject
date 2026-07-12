@@ -1,7 +1,8 @@
+
 /* ===== Student Dashboard Page ===== */
 
 .student-dashboard-page {
-    --dashboard-scale: 3;
+    --dashboard-scale: 0.75;
 
     position: relative;
     width: 100%;
@@ -27,7 +28,7 @@
     box-sizing: border-box;
 }
 
-/* ===== Logo + Exit ===== */
+/* ===== Logo  ===== */
 
 .dashboard-logo {
     position: absolute;
@@ -40,29 +41,6 @@
     object-fit: contain;
 
     z-index: 3;
-}
-
-.dashboard-exit-button {
-    position: absolute;
-    top: calc(1.1rem * var(--dashboard-scale));
-    right: calc(1.2rem * var(--dashboard-scale));
-
-    width: calc(1.6rem * var(--dashboard-scale));
-    height: calc(1.6rem * var(--dashboard-scale));
-
-    border: none;
-    background: transparent;
-    padding: 0;
-
-    cursor: pointer;
-    z-index: 4;
-}
-
-.dashboard-exit-button img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
 }
 
 /* ===== Main Layout ===== */
@@ -687,15 +665,6 @@
         z-index: 1;
     }
 
-    .dashboard-exit-button {
-        position: fixed;
-        top: 1.5rem;
-        right: 1.5rem;
-        width: 3rem;
-        height: 3rem;
-        z-index: 20;
-    }
-
     .dashboard-layout {
         width: 100%;
         max-width: 62rem;
@@ -905,17 +874,6 @@
     .dashboard-logo {
         width: min(18rem, 72vw);
         margin-bottom: 1.5rem;
-    }
-
-    .dashboard-exit-button {
-        position: absolute;
-        top: 1.5rem;
-        right: 1.5rem;
-
-        width: 3rem;
-        height: 3rem;
-
-        z-index: 20;
     }
 
     .dashboard-layout {
