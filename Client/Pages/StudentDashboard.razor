@@ -201,6 +201,7 @@
                 // 1. מעדכנים את הזיכרון (State)
                 State.SelectedSessionId = newId;
                 State.CurrentPhase = 1; // תמיד מתחילים בשלב הקלט
+                State.IsNewTraining = true;
 
                 // 2. מנווטים לנתיב "נקי" ללא ID
                 Navigation.NavigateTo("/TopicSelection");
@@ -260,6 +261,7 @@
         State.SelectedSessionId = session.Id; 
         State.Topic = session.Topic;           
         State.CurrentPhase = session.CurrentPhase ?? 1;
+        State.IsNewTraining = false;
 
         // 2. ניווט לפי השלב - טיפול בכל מה שמעל 5
         if (State.CurrentPhase > 5) 

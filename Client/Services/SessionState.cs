@@ -8,6 +8,7 @@ namespace BlazorGoogleLogin.Client.Services
         public int CurrentPhase { get; set; } = 1;
         public string DocumentContext { get; set; }
         public string Topic { get; set; } 
+        public bool IsNewTraining { get; set; }
 
         public event Action OnChange;
 
@@ -30,6 +31,7 @@ namespace BlazorGoogleLogin.Client.Services
             CurrentPhase = 1;
             DocumentContext = null;
             Topic = null;
+            IsNewTraining = false;
             NotifyStateChanged();
         }
     }

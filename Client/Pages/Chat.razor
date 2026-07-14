@@ -11,6 +11,33 @@
 
 <div class="chat-page">
 
+    @if (showIntroPopup)
+    {
+        <div class="intro-modal-backdrop">
+            <div class="intro-modal-card" dir="rtl">
+                <button class="intro-modal-close" @onclick="CloseIntroPopup" aria-label="סגירת החלון">×</button>
+
+                <h2>ברוכים הבאים וברוכות הבאות לשיחה עם TedFriend!</h2>
+
+                <div class="intro-modal-body">
+                    <p>השיחה נועדה לעזור לכם לבנות פרזנטציה באנגלית.</p>
+                    <p>התהליך מחולק לארבעה שלבים:</p>
+                    <ol>
+                        <li><strong>פתיחת ההרצאה</strong> — בה תציגו את עצמכם ואת נושא הפרזנטציה, תמשכו את הקשב של הקהל ותיצרו קישור לחלק הבא.</li>
+                        <li><strong>גוף ההרצאה</strong> — בו תפרטו שני רעיונות מרכזיים בנושא שבחרתם.</li>
+                        <li><strong>סיכום ההרצאה</strong> — בו תחזרו על הרעיון המרכזי ותנסחו מסר בולט לקהל.</li>
+                        <li><strong>תרגול קולי</strong> — בו תוכלו להקליט הודעה ל־TedFriend ולקבל משוב בעל פה.</li>
+                    </ol>
+                    <p class="intro-modal-strong">שימו לב: הדברים שתכתבו כאן חשופים ל־TedFriend ולמדריכות התוכנית. הקפידו לא לשתף סיסמאות או מידע אישי רגיש.</p>
+                </div>
+
+                <button class="intro-modal-primary-button" @onclick="CloseIntroPopup">
+                    קראתי, תודה!
+                </button>
+            </div>
+        </div>
+    }
+
     <main class="chat-main">
 
         <img src="images/logo_black-removebg-preview%20(1).png"
@@ -242,6 +269,7 @@
     private string userMessage = "";
     private bool isTyping = false; //משתנה בוליאני להקלדה
     private bool isRecording = false; //משתנה בוליאני להקלטה
+    private bool showIntroPopup = false;
 
     // --- אתחול הדף ---
     protected override async Task OnInitializedAsync()
@@ -250,6 +278,11 @@
         {
             Navigation.NavigateTo("/StudentDashboard");
             return;
+        }
+
+        if (State.IsNewTraining)
+        {
+            showIntroPopup = true;
         }
 
         try 
@@ -271,6 +304,12 @@
             Console.WriteLine($"Error: {ex.Message}");
         }
         await InitializePhaseChat();
+    }
+
+    private void CloseIntroPopup()
+    {
+        showIntroPopup = false;
+        State.IsNewTraining = false;
     }
 
     private List<Message> GetCurrentPhaseMessages()
