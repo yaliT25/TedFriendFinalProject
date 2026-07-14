@@ -1,5 +1,6 @@
 @page "/TopicSelection"
 @using BlazorGoogleLogin.Client.Services
+@using System.IO
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject SessionState State
@@ -23,7 +24,7 @@
                 {
                 <label class="custom-file-upload">
                     <InputFile OnChange="HandleFileSelected"
-                               accept=".pdf,.doc,.docx"
+                               accept=".pdf,.docx"
                                class="file-input-hidden" />
 
                     <div class="icon-circle">
@@ -88,6 +89,7 @@
 @code {
     // הלוגיקה של ה-C# שלכם נשארת בדיוק אותו דבר...
     private IBrowserFile selectedFile = null;
+    private byte[] fileBytes = null;
     private string manualContext = "";
     private bool isProcessing = false;
     private string fileErrorMessage = "";
@@ -95,25 +97,48 @@
     private void ClearFile()
     {
         selectedFile = null;
+        fileBytes = null;
         fileErrorMessage = "";
     }
 
-    private void HandleFileSelected(InputFileChangeEventArgs e)
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         var file = e.File;
-        var allowedExtensions = new[] { ".pdf", ".doc", ".docx" };
-        var extension = System.IO.Path.GetExtension(file.Name).ToLower();
+        var allowedExtensions = new[] { ".pdf", ".docx" };
+        var extension = Path.GetExtension(file.Name).ToLower();
 
         if (allowedExtensions.Contains(extension))
         {
-            selectedFile = file;
-            manualContext = "";
-            fileErrorMessage = "";
+            try
+            {
+                isProcessing = true;
+                fileErrorMessage = "";
+                
+                using var stream = file.OpenReadStream(1024 * 1024 * 10);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+
+                selectedFile = file;
+                manualContext = "";
+            }
+            catch (Exception ex)
+            {
+                selectedFile = null;
+                fileBytes = null;
+                fileErrorMessage = "שגיאה בקריאת הקובץ, נסו שוב או הזינו את נושא הפרזנטציה ידנית.";
+                Console.WriteLine($"Error reading file: {ex.Message}");
+            }
+            finally
+            {
+                isProcessing = false;
+            }
         }
         else
         {
             selectedFile = null;
-            fileErrorMessage = "אפשר להעלות רק קבצי PDF או Word";
+            fileBytes = null;
+            fileErrorMessage = "אפשר להעלות רק קבצי PDF או DOCX";
         }
     }
 
@@ -123,6 +148,7 @@
         if (!string.IsNullOrWhiteSpace(manualContext))
         {
             selectedFile = null;
+            fileBytes = null;
             fileErrorMessage = "";
         }
     }
@@ -133,13 +159,23 @@
         isProcessing = true;
         try
         {
-            if (selectedFile != null)
+            if (selectedFile != null && fileBytes != null)
             {
                 var content = new MultipartFormDataContent();
-                var fileContent = new StreamContent(selectedFile.OpenReadStream(1024 * 1024 * 10));
+                var fileContent = new ByteArrayContent(fileBytes);
                 content.Add(fileContent, "File", selectedFile.Name);
                 var response = await Http.PostAsync($"api/GPT/UploadDocument/{State.SelectedSessionId}", content);
-                State.DocumentContext = await response.Content.ReadAsStringAsync();
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    State.DocumentContext = await response.Content.ReadAsStringAsync();
+                }
+                else
+                {
+                    fileErrorMessage = "שגיאה בעיבוד הקובץ, נסו שוב או הזינו את נושא הפרזנטציה ידנית.";
+                    isProcessing = false;
+                    return;
+                }
             }
             else if (!string.IsNullOrWhiteSpace(manualContext))
             {
@@ -152,6 +188,7 @@
         }
         catch (Exception ex)
         {
+            fileErrorMessage = "שגיאה בעיבוד הקובץ, נסו שוב או הזינו את נושא הפרזנטציה ידנית.";
             Console.WriteLine($"Error: {ex.Message}");
         }
         finally

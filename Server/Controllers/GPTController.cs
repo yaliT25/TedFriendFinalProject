@@ -141,15 +141,15 @@ namespace BlazorGoogleLogin.Server.Controllers
 
         // מסלול 1: עיבוד קובץ (PDF או Word)
         [HttpPost("UploadDocument/{sessionId}")]
-        public async Task<IActionResult> UploadDocument(int sessionId, [FromForm] FileUploadRequest request)
+        public async Task<IActionResult> UploadDocument(int sessionId, IFormFile File)
         {
-            if (request.File == null || request.File.Length == 0)
+            if (File == null || File.Length == 0)
                 return BadRequest("לא הועלה קובץ.");
 
             try
             {
                 // חילוץ הטקסט
-                string extractedText = ExtractTextLogic(request);
+                string extractedText = ExtractTextLogic(File);
 
                 // יצירת כותרת AI מהטקסט שחולץ מהקובץ
                 string aiTopic = await GenerateTopicWithAI(extractedText);
@@ -499,12 +499,12 @@ Do not add explanations, markdown, or text outside the JSON.
        #region פונקציות עזר פנימיות (Helper Methods)
 
 // לוגיקה לחילוץ טקסט מקבצים - תומכת ב-PDF וב-Word
-private string ExtractTextLogic(FileUploadRequest request)
+private string ExtractTextLogic(IFormFile file)
 {
-    string extension = Path.GetExtension(request.File.FileName).ToLower();
+    string extension = Path.GetExtension(file.FileName).ToLower();
     StringBuilder sb = new StringBuilder();
 
-    using (var stream = request.File.OpenReadStream())
+    using (var stream = file.OpenReadStream())
     {
         if (extension == ".pdf")
         {

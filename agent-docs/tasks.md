@@ -44,6 +44,65 @@ Functional change, not visual.
 
 ---
 
+---
+
+## Batch 1.5 — Student Entry and Class Code Flow
+
+These tasks should be handled today only after the current project state is confirmed to run correctly and the latest working state is committed.
+
+### Task 1.2 — Require Class Code Entry for Students
+
+Fix the student entry/login flow so that every student must go through the class code entry screen before accessing the student experience.
+
+The student class code screen is:
+
+```razor
+@page "/StudentEntry"
+```
+
+### Expected Behavior
+
+When the logged-in user is a student:
+
+- The student must enter a valid class code through the StudentEntry screen.
+- The student should not be able to skip the class code step.
+- The student should not be sent directly into the training flow before being connected to an instructor/class.
+- If the student already entered a valid class code and is already connected to an instructor, the system may allow continuing to the student dashboard or existing training flow according to the current project logic.
+- If the student is not connected to an instructor/class, they must be redirected to StudentEntry.
+
+### Expected Change Type
+
+Functional change that may affect routing, role checks, controller logic, and student progression.
+
+### Likely Areas
+
+- Login / role selection flow
+- StudentEntry page
+- Student dashboard routing
+- UsersController / join-class logic
+- Authentication and role checks
+- DTOs if required
+
+### Rules
+
+- Do not change Google Login itself without explicit approval.
+- Do not change JWT, cookie, or authentication infrastructure unless strictly required and approved.
+- Do not change teacher login flow unless required for this specific task.
+- Do not expose instructor dashboard data to students.
+- Keep the fix minimal and focused on student routing and class code validation.
+- Follow `controllers.md` if controller changes are required.
+- Follow `database.md` if any database query changes are required.
+
+### Before Editing
+
+Before editing, the agent must explain:
+
+1. how the current student entry flow works;
+2. where students can currently bypass the class code step;
+3. which files need to change;
+4. whether the change affects authentication, role logic, routing, controllers, or database queries;
+5. the smallest safe fix.
+
 ## Batch 2 — Student Word Summary Product
 
 ### Task 2.1 — Generate Personal Word Summary for Student
@@ -85,6 +144,68 @@ The document may begin with a short personal sentence in Hebrew, such as:
 - The instructor may also access the same Word product through the instructor dashboard when explicitly requested.
 
 ---
+
+---
+
+## Batch 2.5 — Topic Selection File Upload
+
+These tasks may be handled today after the student entry/class code flow is stabilized, or as a separate task if the developer chooses to prioritize file upload first.
+
+### Task 2.2 — Fix File Upload Flow in Topic Selection
+
+Fix the file upload functionality in the Topic Selection screen.
+
+Currently, the interface appears to allow the student to upload a file, but after clicking the start button, the uploaded file does not actually work as expected.
+
+The topic selection screen is responsible for choosing, entering, or uploading information about the presentation topic.
+
+### Expected Behavior
+
+When the student uploads a supported file and clicks the start button:
+
+- the selected file should be recognized by the system;
+- the file should be processed, saved, or used according to the existing project logic;
+- the student should be able to continue to the training/chat flow only if the required topic/input conditions are met;
+- the system should not visually suggest that file upload works if the uploaded file is ignored;
+- if file upload fails, the student should receive a clear, friendly error message.
+
+### Expected Change Type
+
+Functional change that may affect client-side file input logic, start button behavior, server-side upload logic, or AI/topic initialization logic.
+
+### Likely Areas
+
+- `TopicSelection.razor`
+- `TopicSelection.razor.css`, only if needed
+- file input handling logic
+- start button logic
+- related service or controller, if file processing is server-side
+- DTOs or request models, if required
+- AI/topic initialization logic, only if the uploaded file is already part of that flow
+
+### Rules
+
+- Do not redesign the Topic Selection screen.
+- Do not change the learning flow.
+- Do not add new file upload features beyond the requested fix.
+- Do not add external cloud storage.
+- Do not add new packages unless strictly necessary and approved.
+- Follow faculty file-size and file-storage constraints.
+- If uploaded files are saved, explain where they are saved and whether the database is affected.
+- If uploaded files are only used temporarily, explain that clearly.
+- Keep the fix minimal.
+- If the existing UI suggests file upload but the system is not intended to support file upload, stop and ask the developer before removing or hiding the feature.
+
+### Before Editing
+
+Before editing, the agent must explain:
+
+1. what currently happens when a file is selected;
+2. what currently happens when the start button is clicked;
+3. why the uploaded file is not being used;
+4. which files need to change;
+5. whether the fix affects database, controllers, file storage, AI processing, or only client-side logic;
+6. the smallest safe fix.
 
 ## Batch 3 — Voice Practice Data
 
