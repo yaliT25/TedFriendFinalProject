@@ -247,7 +247,7 @@
     flex-direction: column;
     gap: 1.09375rem;
 
-    padding: 0.3125rem 0.25rem 0.625rem;
+    padding: 0.3125rem 0.25rem 3rem;
 }
 
 /* ===== Message Rows ===== */
@@ -616,7 +616,7 @@
         max-height: none;
 
         gap: 1.6rem;
-        padding: 0.5rem 0.25rem 1rem;
+        padding: 0.5rem 0.25rem 3rem;
     }
 
     .chat-row {
@@ -777,7 +777,7 @@
 
     .chat-messages {
         gap: 1.1rem;
-        padding: 0.4rem 0 0.8rem;
+        padding: 0.4rem 0 3rem;
     }
 
     .chat-row {

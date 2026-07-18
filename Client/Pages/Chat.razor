@@ -283,6 +283,23 @@
     private bool isRecording = false; //משתנה בוליאני להקלטה
     private bool showIntroPopup = false;
 
+    private int lastMessageCount = 0;
+    private bool lastIsTyping = false;
+    private int lastPhase = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var currentCount = Messages.Count;
+        var currentPhase = State.CurrentPhase;
+        if (currentCount != lastMessageCount || isTyping != lastIsTyping || currentPhase != lastPhase)
+        {
+            lastMessageCount = currentCount;
+            lastIsTyping = isTyping;
+            lastPhase = currentPhase;
+            await ScrollToBottom();
+        }
+    }
+
     // --- אתחול הדף ---
     protected override async Task OnInitializedAsync()
     {
@@ -612,6 +629,7 @@
             
                 // עדכון ה-UI
                 StateHasChanged();
+                await ScrollToBottom();
             }
         }
         catch (Exception ex)
