@@ -265,7 +265,19 @@
 
 @code {
     private Dictionary<int, List<Message>> phaseHistories = new();
-    private List<Message> Messages => GetCurrentPhaseMessages(); //רשימת הודעות מהשלב
+    private List<Message> Messages => GetCurrentPhaseMessages(); // רשימת הודעות מהשלב
+    private List<Message> GetAllMessages()
+    {
+        var all = new List<Message>();
+        for (int p = 2; p <= 5; p++)
+        {
+            if (phaseHistories.TryGetValue(p, out var list))
+            {
+                all.AddRange(list);
+            }
+        }
+        return all;
+    }
     private string userMessage = "";
     private bool isTyping = false; //משתנה בוליאני להקלדה
     private bool isRecording = false; //משתנה בוליאני להקלטה
@@ -297,6 +309,54 @@
                     State.Topic = session.Topic;
                 }
                 State.CurrentPhase = session.CurrentPhase ?? 2;
+
+                if (!string.IsNullOrEmpty(session.ChatHistory))
+                {
+                    try
+                    {
+                        string trimmedHistory = session.ChatHistory.Trim();
+                        if (trimmedHistory.StartsWith("["))
+                        {
+                            var deserialized = JsonSerializer.Deserialize<List<Message>>(session.ChatHistory);
+                            if (deserialized != null)
+                            {
+                                phaseHistories = new Dictionary<int, List<Message>>();
+                                foreach (var msg in deserialized)
+                                {
+                                    int p = msg.Phase ?? 2;
+                                    if (!phaseHistories.ContainsKey(p))
+                                    {
+                                        phaseHistories[p] = new List<Message>();
+                                    }
+                                    phaseHistories[p].Add(msg);
+                                }
+                            }
+                        }
+                        else if (trimmedHistory.StartsWith("{"))
+                        {
+                            var dict = JsonSerializer.Deserialize<Dictionary<string, List<Message>>>(session.ChatHistory);
+                            if (dict != null)
+                            {
+                                phaseHistories = new Dictionary<int, List<Message>>();
+                                foreach (var kvp in dict)
+                                {
+                                    if (int.TryParse(kvp.Key, out int p))
+                                    {
+                                        phaseHistories[p] = kvp.Value ?? new List<Message>();
+                                        foreach (var msg in phaseHistories[p])
+                                        {
+                                            msg.Phase = p;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception jsonEx)
+                    {
+                        Console.WriteLine($"Error deserializing ChatHistory: {jsonEx.Message}");
+                    }
+                }
             }
         }
         catch (Exception ex) 
@@ -323,7 +383,8 @@
 
     private async Task InitializePhaseChat()
     {
-        if (Messages.Any()) return;
+        var currentPhaseMessages = GetCurrentPhaseMessages();
+        if (currentPhaseMessages.Any()) return;
 
         string topic = State.Topic ?? "your TED Talk";
         int currentPhase = State.CurrentPhase;
@@ -337,7 +398,7 @@
             _ => "Hi! I’m here to help you with your TED Talk 😊"
         };
 
-        Messages.Add(new Message { role = "assistant", content = greetingMessage });
+        currentPhaseMessages.Add(new Message { role = "assistant", content = greetingMessage, Phase = currentPhase });
         StateHasChanged();
     }
 
@@ -359,7 +420,7 @@
         if (incomingText == null) userMessage = ""; 
     
         // 1. הוספת הודעת המשתמש לרשימה
-        Messages.Add(new Message { role = "user", content = content });
+        GetCurrentPhaseMessages().Add(new Message { role = "user", content = content, Phase = State.CurrentPhase });
     
         // 2. הפעלת מצב "בדיקה"
         isTyping = true;
@@ -372,7 +433,7 @@
         var request = new ChatRequest
         {
             DocumentContent = State.DocumentContext,
-            History = Messages
+            History = GetAllMessages()
         };
 
         try
@@ -381,7 +442,7 @@
             if (response.IsSuccessStatusCode)
             {
                 var reply = await response.Content.ReadAsStringAsync();
-                Messages.Add(new Message { role = "assistant", content = reply });
+                GetCurrentPhaseMessages().Add(new Message { role = "assistant", content = reply, Phase = State.CurrentPhase });
                 // עדכון סופי כשהתשובה מגיעה
                 await ScrollToBottom();
             }
@@ -505,7 +566,8 @@
 
     private async Task HandleLogout()
     {
-        var fullHistoryJson = JsonSerializer.Serialize(phaseHistories);
+        var flatMessages = phaseHistories.Values.SelectMany(x => x).ToList();
+        var fullHistoryJson = JsonSerializer.Serialize(flatMessages);
         var updateModel = new SaveProgressRequest { 
             History = fullHistoryJson, 
             CurrentPhase = State.CurrentPhase 

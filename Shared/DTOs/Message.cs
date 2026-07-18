@@ -6,4 +6,5 @@ public class Message
     public string content { get; set; }
     
     public string? translatedContent { get; set; }
+    public int? Phase { get; set; }
 }

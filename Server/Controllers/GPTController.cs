@@ -82,7 +82,7 @@ namespace BlazorGoogleLogin.Server.Controllers
         {
             using var connection = new SqliteConnection(_connectionString);
             // שליפה ממוקדת של השדות הקריטיים
-            string sql = "SELECT Id, Topic, CurrentPhase FROM ChatSessions WHERE Id = @Id";
+            string sql = "SELECT Id, Topic, CurrentPhase, ChatHistory FROM ChatSessions WHERE Id = @Id";
     
             var session = await connection.QueryFirstOrDefaultAsync<ChatSession>(sql, new { Id = sessionId });
     
@@ -205,6 +205,18 @@ namespace BlazorGoogleLogin.Server.Controllers
 
             // העברת הנתונים מה-DB לפונקציית העזר
             string assistantReply = await CallOpenAI(request, (int)sessionData.CurrentPhase, (string)sessionData.Topic);
+
+            // הוספת תשובת ה-AI להיסטוריה לצורך שמירה
+            if (request.History == null)
+            {
+                request.History = new List<Message>();
+            }
+            request.History.Add(new Message 
+            { 
+                role = "assistant", 
+                content = assistantReply, 
+                Phase = (int)sessionData.CurrentPhase 
+            });
 
             // עדכון ושמירת היסטוריית השיחה
             string historyJson = JsonSerializer.Serialize(request.History);
@@ -752,7 +764,8 @@ Please help me with Phase {currentPhase}.
     // הוספת היסטוריית השיחה הקיימת לבקשה לצורך שמירה על הקשר (Context)
     if (request.History != null)
     {
-        foreach (var msg in request.History)
+        var currentPhaseMessages = request.History.Where(msg => (msg.Phase ?? currentPhase) == currentPhase);
+        foreach (var msg in currentPhaseMessages)
         {
             messagesForOpenAI.Add(new { role = msg.role, content = msg.content });
         }

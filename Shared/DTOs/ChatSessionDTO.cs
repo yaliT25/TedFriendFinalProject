@@ -10,4 +10,5 @@ public class ChatSessionDTO
     public int? FluencyScore { get; set; }
     public int? GrammarScore { get; set; }
     public string AiAnalysisJson { get; set; }
+    public string ChatHistory { get; set; }
 }
