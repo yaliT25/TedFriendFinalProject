@@ -490,12 +490,44 @@
     {
         try 
         {
-            var audioBytes = Convert.FromBase64String(base64Audio);
+            string mimeType = "audio/webm";
+            string extension = "webm";
+            string base64Data = base64Audio;
+            
+            if (base64Audio.StartsWith("data:"))
+            {
+                var parts = base64Audio.Split(',');
+                if (parts.Length > 1)
+                {
+                    var header = parts[0]; // למשל: "data:audio/mp4;base64"
+                    base64Data = parts[1];
+                    
+                    var mimePart = header.Split(';')[0]; // "data:audio/mp4"
+                    if (mimePart.Length > 5)
+                    {
+                        mimeType = mimePart.Substring(5);
+                        if (mimeType == "audio/mp4" || mimeType == "audio/m4a" || mimeType == "audio/x-m4a")
+                        {
+                            extension = "mp4";
+                        }
+                        else if (mimeType == "audio/wav")
+                        {
+                            extension = "wav";
+                        }
+                        else if (mimeType == "audio/aac")
+                        {
+                            extension = "aac";
+                        }
+                    }
+                }
+            }
+
+            var audioBytes = Convert.FromBase64String(base64Data);
             var content = new MultipartFormDataContent();
             var fileContent = new ByteArrayContent(audioBytes);
-            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/webm");
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mimeType);
         
-            content.Add(fileContent, "audioFile", "audio.webm");
+            content.Add(fileContent, "audioFile", $"audio.{extension}");
 
             var response = await Http.PostAsync("api/Speech/transcribe", content);
             if (response.IsSuccessStatusCode)
