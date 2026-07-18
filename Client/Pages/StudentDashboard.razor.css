@@ -1076,3 +1076,34 @@
         display: none;
     }
 }
+
+.dashboard-header-actions {
+    position: absolute;
+    top: calc(1rem * var(--dashboard-scale));
+    right: 5%;
+    z-index: 1000;
+    display: flex;
+    flex-direction: row;
+    gap: calc(0.5rem * var(--dashboard-scale));
+}
+
+@media (min-width: 1200px) {
+    .dashboard-header-actions {
+        top: 1rem;
+        right: 1.5rem;
+    }
+}
+
+.dashboard-header-actions button.page-nav-button {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+}
+
+.dashboard-header-actions button.page-nav-button svg {
+    height: 0.95em;
+    width: auto;
+    display: block;
+    object-fit: contain;
+    flex: 0 0 auto;
+}

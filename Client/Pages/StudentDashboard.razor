@@ -10,12 +10,22 @@
 
     <img src="images/logo_black-removebg-preview%20(1).png" class="dashboard-logo" alt="Logo" />
 
-    <button class="page-nav-button"
-            @onclick="GoToMainScreen"
-            aria-label="חזרה למסך הכניסה">
-        <span>חזרה למסך הכניסה</span>
-        <img src="images/leaveICON.png" alt="" />
-    </button>
+    <div class="dashboard-header-actions">
+        <button class="page-nav-button" @onclick="GoToSettings" aria-label="הגדרות שיוך">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="settings-svg-icon">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>הגדרות שיוך</span>
+        </button>
+
+        <button class="page-nav-button"
+                @onclick="GoToMainScreen"
+                aria-label="חזרה למסך הכניסה">
+            <span>חזרה למסך הכניסה</span>
+            <img src="images/leaveICON.png" alt="" />
+        </button>
+    </div>
 
     <div class="dashboard-layout">
 
@@ -80,24 +90,16 @@
         </section>
 
         <section class="dashboard-side-panel">
-
-            <div class="student-greeting">
+            <div class="student-greeting" dir="rtl">
                 <h1>Hi @user?.Name</h1>
             </div>
 
-            <div class="new-practice-card"
-                 tabindex="0"
-                 role="button"
-                 @onclick="HandleCreateSession"
-                 @onkeydown="HandleNewPracticeKeyDown">
-
+            <!-- כרטיסיית יצירת אימון אינטראקטיבית -->
+            <div class="new-practice-card" @onclick="HandleCreateSession" tabindex="0" @onkeydown="HandleNewPracticeKeyDown" role="button" aria-label="התחילו אימון חדש">
                 <div class="card-corner-blur"></div>
-
-                @* הכפתור הפנימי הפך ל-tabindex="-1" כי עכשיו כל הכרטיסייה היא כפתור אחד ענק *@
-                <button class="new-practice-button" tabindex="-1" aria-label="התחל אימון חדש">
-                    <img src="images/createNewICON.png" class="new-practice-icon" alt="אייקון של הסימן פלוס" />
-                </button>
-
+                <div class="new-practice-button">
+                    <img src="images/createNewICON.png" class="new-practice-icon" alt="" />
+                </div>
                 <h2>התחילו אימון חדש</h2>
                 <p>תכננו והתאמנו על ההצגה שלכם/ן</p>
             </div>
@@ -127,6 +129,7 @@
 
     </div>
 
+    <!-- מודאל מחיקה מותאם אישית ומאובטח (Custom Dialog Modal) -->
     @if (_showDeleteModal)
     {
         <div class="student-modal-backdrop"></div>
@@ -173,6 +176,24 @@
     {
         try
         {
+            var info = await Http.GetFromJsonAsync<ClassCodeResponseDTO>("api/users/my-info");
+            if (info == null || info.Role != 2 || info.TeacherId == null)
+            {
+                if (info != null && info.Role == 1)
+                {
+                    Navigation.NavigateTo("/TeacherDashboard");
+                }
+                else if (info != null && info.Role == 2 && info.TeacherId == null)
+                {
+                    Navigation.NavigateTo("/StudentEntry");
+                }
+                else
+                {
+                    Navigation.NavigateTo("/Users");
+                }
+                return;
+            }
+
             if (user != null)
             {
                 // פנייה לקונטרולר לשליפת כל הסשנים ששייכים ל-ID של המשתמש הנוכחי
@@ -279,6 +300,11 @@
         }
     }
     
+    private void GoToSettings()
+    {
+        Navigation.NavigateTo("/Users?settings=true");
+    }
+
     private void GoToMainScreen()
     {
         State.SelectedSessionId = 0;

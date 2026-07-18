@@ -15,10 +15,20 @@
         <div class="teacher-header-row">
             <h2 class="teacher-greeting">שלום, @(user?.Name ?? "המורה")</h2>
 
-            <button class="teacher-exit-button" @onclick="GoToMainScreen" aria-label="יציאה מהמערכת">
-                <img src="images/leaveICON.png" alt="אייקון של יציאה. חצי ריבוע שיוצא מחציו קו לכיוון הנגדי" />
-                <span>יציאה מהמערכת</span>
-            </button>
+            <div style="display: flex; gap: 0.5rem; align-items: center; z-index: 5;">
+                <button class="teacher-settings-button" @onclick="GoToSettings" aria-label="הגדרות שיוך">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>הגדרות שיוך</span>
+                </button>
+
+                <button class="teacher-exit-button" @onclick="GoToMainScreen" aria-label="יציאה מהמערכת">
+                    <img src="images/leaveICON.png" alt="אייקון של יציאה. חצי ריבוע שיוצא מחציו קו לכיוון הנגדי" />
+                    <span>יציאה מהמערכת</span>
+                </button>
+            </div>
         </div>
 
         <div class="teacher-top-row">
@@ -244,18 +254,35 @@
     {
         try
         {
-            var infoTask = Http.GetFromJsonAsync<ClassCodeResponseDTO>("api/users/my-info");
-            var reportTask = Http.GetFromJsonAsync<List<StudentReportDTO>>("api/users/my-students-report");
+            info = await Http.GetFromJsonAsync<ClassCodeResponseDTO>("api/users/my-info");
+            if (info == null || info.Role != 1)
+            {
+                if (info != null && info.Role == 2)
+                {
+                    if (info.TeacherId != null)
+                    {
+                        Navigation.NavigateTo("/StudentDashboard");
+                    }
+                    else
+                    {
+                        Navigation.NavigateTo("/StudentEntry");
+                    }
+                }
+                else
+                {
+                    Navigation.NavigateTo("/Users");
+                }
+                return;
+            }
 
-            info = await infoTask;
-            reports = await reportTask;
+            reports = await Http.GetFromJsonAsync<List<StudentReportDTO>>("api/users/my-students-report");
 
             // קריאה לפונקציה שתמלא את המשתנים
             UpdateDashboardStats();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error initializing teacher dashboard: {ex.Message}");
         }
     }
 
@@ -288,6 +315,11 @@
         _showCommentModal = false;
     }
     
+    private void GoToSettings()
+    {
+        Navigation.NavigateTo("/Users?settings=true");
+    }
+
     private void GoToMainScreen()
     {
         // ניווט פשוט למסך הכניסה

@@ -910,3 +910,71 @@
         font-size: 1rem;
     }
 }
+
+.teacher-settings-button {
+    position: static;
+    min-width: 6.74203rem;
+    height: 1.67969rem;
+    border: none;
+    border-radius: 0.89844rem;
+    background: #F9FDFF;
+    box-shadow: 1.875px 2.5px 2.1875px 0 rgba(0, 0, 0, 0.17);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.34375rem;
+    padding: 0 0.625rem;
+    color: #000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 5;
+    transition: background 0.2s ease;
+}
+
+.teacher-settings-button:hover {
+    background: #eef7fc;
+}
+
+.teacher-settings-button svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    object-fit: contain;
+}
+
+@media (max-width: 1200px) {
+    .teacher-settings-button {
+        position: static;
+        min-width: 9.5rem;
+        height: 2.4rem;
+        border-radius: 1.4rem;
+        font-size: 0.9rem;
+        gap: 0.5rem;
+        padding: 0 1rem;
+        box-shadow: 3px 4px 3.5px 0 rgba(0, 0, 0, 0.17);
+    }
+
+    .teacher-settings-button svg {
+        width: 1.1rem;
+        height: 1.1rem;
+    }
+}
+
+@media (max-width: 760px) {
+    .teacher-settings-button {
+        position: static;
+        width: 8.8rem;
+        min-width: 8.8rem;
+        height: 2.25rem;
+        border-radius: 1.2rem;
+        font-size: 0.78rem;
+        gap: 0.35rem;
+    }
+
+    .teacher-settings-button svg {
+        width: 1rem;
+        height: 1rem;
+    }
+}

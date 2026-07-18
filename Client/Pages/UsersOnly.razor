@@ -1,4 +1,4 @@
-﻿@page "/Users"
+@page "/Users"
 @using Microsoft.AspNetCore.Authorization
 @using BlazorGoogleLogin.Shared.DTOs
 @attribute [Authorize]
@@ -54,6 +54,42 @@
     [CascadingParameter]
     private UserDTO user { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        bool settingsFlow = Nav.Uri.Contains("settings=true");
+        if (settingsFlow)
+        {
+            return;
+        }
+
+        try 
+        {
+            var info = await Http.GetFromJsonAsync<ClassCodeResponseDTO>("api/users/my-info");
+            if (info != null)
+            {
+                if (info.Role == 1)
+                {
+                    Nav.NavigateTo("/TeacherDashboard");
+                }
+                else if (info.Role == 2)
+                {
+                    if (info.TeacherId != null)
+                    {
+                        Nav.NavigateTo("/StudentDashboard");
+                    }
+                    else
+                    {
+                        Nav.NavigateTo("/StudentEntry");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking existing user role: {ex.Message}");
+        }
+    }
+
     void LoginWithGoogle()
     {
         Nav.NavigateTo("api/google/login", forceLoad: true);
@@ -82,8 +118,13 @@
                 else 
                 {
                     // 4. צומת החלטה - תלמיד (ניווט מותנה):
-                    // אם השדה ClassCode אינו ריק, זה אומר שהתלמידה כבר שויכה למורה בעבר.
-                    if (!string.IsNullOrEmpty(result?.ClassCode))
+                    bool settingsFlow = Nav.Uri.Contains("settings=true");
+                    if (settingsFlow)
+                    {
+                        // במסלול הגדרות, תמיד מנווטים להזנת קוד כיתה
+                        Nav.NavigateTo("/StudentEntry");
+                    }
+                    else if (!string.IsNullOrEmpty(result?.ClassCode))
                     {
                         // "קיצור דרך" - דלגי ישר לעמוד העבודה והשיחות.
                         Nav.NavigateTo("/StudentDashboard");

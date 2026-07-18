@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite; // חבילה ל-SQLite
 using Dapper;               // חבילה ל-Dapper
 using System.Security.Claims;
@@ -47,8 +47,8 @@ namespace BlazorGoogleLogin.Server.Controllers
                     int roleId = (roleName == "Teacher") ? 1 : 2;
                     string? classCode = currentUser?.ClassCode; 
 
-                    // לוגיקה למורה: מייצרים קוד אם חסר
-                    if (roleId == 1 && string.IsNullOrEmpty(classCode))
+                    // לוגיקה למורה: מייצרים קוד אם חסר או אם הוא "JOINED"
+                    if (roleId == 1 && (string.IsNullOrEmpty(classCode) || classCode == "JOINED"))
                     {
                         classCode = GenerateClassCode();
                     }
@@ -91,7 +91,7 @@ namespace BlazorGoogleLogin.Server.Controllers
                 using (var connection = new SqliteConnection(_config.GetConnectionString("DefaultConnection")))
                 {
                     // 3. שליפת הנתונים - ודאי ששמות העמודות (Role, ClassCode) תואמים ל-DB שלך
-                    string sql = "SELECT Role, ClassCode AS Code FROM Users WHERE Id = @userId";
+                    string sql = "SELECT Role, ClassCode AS Code, ClassCode, TeacherId FROM Users WHERE Id = @userId";
 
                     var user = await connection.QueryFirstOrDefaultAsync<ClassCodeResponseDTO>(sql, new { userId = userIdClaim });
 
