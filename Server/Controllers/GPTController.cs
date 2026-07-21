@@ -8,6 +8,8 @@ using NPOI.XWPF.UserModel;
 using System.Text;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
+using System.IO;
 
 namespace BlazorGoogleLogin.Server.Controllers
 {
@@ -462,7 +464,6 @@ Good Keep examples:
 
 Good Improve examples:
 - ""בפעם הבאה, נסה/י לעבוד על סדר המילים במשפט כדי שהרעיונות יהיו ברורים יותר.""
-- ""בפעם הבאה, נסה/י לעבוד על חיבור בין רעיונות עם because או also כדי שההרצאה תזרום יותר.""
 - ""בפעם הבאה, נסה/י לעבוד על דיבור איטי יותר כדי שיהיה קל יותר להבין אותך.""
 - ""בפעם הבאה, נסה/י לעבוד על עצירה קצרה אחרי כל רעיון כדי שהדיבור יהיה ברור יותר.""
 - ""בפעם הבאה, נסה/י לעבוד על הצליל th במילים כמו think כדי שההגייה תהיה ברורה יותר.""
@@ -477,7 +478,7 @@ Hebrew language rules:
 - Do NOT use feminine-only phrasing.
 
 CRITICAL LANGUAGE RULES:
-- Strictly FORBIDDEN to use any Arabic characters or words (e.g., avoid ""أثناء"", ""كل"").
+- Strictly FORBIDDEN to use any Arabic characters or words (e.g., avoid ""أثناء"", ""כל"").
 - The output must be 100% Hebrew script only.
 - If you are unsure of a word in Hebrew, use a simpler Hebrew synonym.
 - Before returning the JSON, double-check that every character is a valid Hebrew letter or a standard punctuation mark.
@@ -505,7 +506,727 @@ Do not add explanations, markdown, or text outside the JSON.
             return JsonSerializer.Deserialize<AiAnalysisResult>(jsonContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
 
-       
+        [HttpGet("ExportPresentationWord/{sessionId}")]
+        [Authorize]
+        public async Task<IActionResult> ExportPresentationWord(int sessionId)
+        {
+            var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return Unauthorized("משתמש לא מחובר.");
+            }
+
+            if (!int.TryParse(userIdClaim, out int loggedInUserId))
+            {
+                return Unauthorized("מזהה משתמש לא תקין בטוקן.");
+            }
+
+            using var connection = new SqliteConnection(_connectionString);
+            
+            string sql = @"
+                SELECT cs.Id, cs.UserId, cs.Topic, cs.ChatHistory, cs.FluencyScore, cs.GrammarScore, cs.AiAnalysisJson, cs.NeedsHelpScore, cs.FreeTextComment,
+                       u.Name AS StudentName, u.TeacherId, u.Role AS UserRole
+                FROM ChatSessions cs
+                JOIN Users u ON cs.UserId = u.Id
+                WHERE cs.Id = @SessionId";
+
+            var session = await connection.QueryFirstOrDefaultAsync<ExportSessionDetails>(sql, new { SessionId = sessionId });
+
+            if (session == null)
+            {
+                return NotFound("הסשן לא נמצא.");
+            }
+
+            // Verify access:
+            // 1. Owner of the session
+            // 2. Or the teacher of the owner of the session
+            if (session.UserId != loggedInUserId && session.TeacherId != loggedInUserId)
+            {
+                return Unauthorized("אין לך הרשאה לגשת לקובץ זה.");
+            }
+
+            string studentName = session.StudentName ?? "Student";
+            string topic = session.Topic ?? "Presentation";
+            string chatHistoryJson = session.ChatHistory;
+
+            // 1. Extract presentation using OpenAI
+            ExtractedPresentation presentation = new ExtractedPresentation();
+            if (!string.IsNullOrEmpty(chatHistoryJson) && chatHistoryJson != "[]")
+            {
+                try
+                {
+                    presentation = await ExtractPresentationFromHistory(chatHistoryJson);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error extracting presentation via AI: {ex.Message}");
+                }
+            }
+
+            // 2. Generate Word Document bytes
+            byte[] fileBytes;
+            try
+            {
+                fileBytes = GeneratePresentationWordDoc(session, presentation);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating Word Document: {ex.Message}");
+                return StatusCode(500, "שגיאה בייצור קובץ ה-Word.");
+            }
+
+            string safeTopic = string.Concat(topic.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
+            string safeStudentName = string.Concat(studentName.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
+            string filename = $"Presentation_{safeStudentName}_{safeTopic}.docx";
+
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename);
+        }
+
+        private byte[] GeneratePresentationWordDoc(ExportSessionDetails session, ExtractedPresentation presentation)
+        {
+            using var outStream = new MemoryStream();
+            using (var doc = new XWPFDocument())
+            {
+                void AddEmptyLine()
+                {
+                    var p = doc.CreateParagraph();
+                    var r = p.CreateRun();
+                    r.SetText("");
+                }
+
+                // Title - Centered and marked as RTL to preserve Hebrew layout/characters ordering correctly
+                var pTitle = doc.CreateParagraph();
+                pTitle.Alignment = ParagraphAlignment.CENTER;
+                var ctpTitle = pTitle.GetCTP();
+                var pPrTitle = ctpTitle.IsSetPPr() ? ctpTitle.pPr : ctpTitle.AddNewPPr();
+                if (pPrTitle.bidi == null) pPrTitle.bidi = new NPOI.OpenXmlFormats.Wordprocessing.CT_OnOff();
+
+                var rTitle = pTitle.CreateRun();
+                rTitle.SetText(SanitizeXmlString("My TED Presentation"));
+                rTitle.FontFamily = "Arial";
+                rTitle.FontSize = 24;
+                rTitle.IsBold = true;
+                rTitle.SetColor("1A365D");
+
+                AddEmptyLine();
+
+                // Greeting sentence in Hebrew - Right-aligned and RTL
+                var pGreet = doc.CreateParagraph();
+                pGreet.Alignment = ParagraphAlignment.RIGHT;
+                var ctpGreet = pGreet.GetCTP();
+                var pPrGreet = ctpGreet.IsSetPPr() ? ctpGreet.pPr : ctpGreet.AddNewPPr();
+                if (pPrGreet.bidi == null) pPrGreet.bidi = new NPOI.OpenXmlFormats.Wordprocessing.CT_OnOff();
+
+                var rGreet = pGreet.CreateRun();
+                string greetingText = "היי! הטבלה הבאה מציגה את חלקי הפרזנטציה שבנינו יחד. אפשר להשתמש בה כדי להתאמן לפני ההצגה בכיתה";
+                rGreet.SetText(SanitizeXmlString(greetingText));
+                rGreet.FontFamily = "Arial";
+                rGreet.FontSize = 12;
+                rGreet.SetColor("2D3748");
+
+                AddEmptyLine();
+
+                var table = doc.CreateTable(1, 2);
+
+                // Set table properties for RTL and Right alignment
+                var tblPr = table.GetCTTbl().tblPr ?? table.GetCTTbl().AddNewTblPr();
+                tblPr.AddNewJc().val = NPOI.OpenXmlFormats.Wordprocessing.ST_Jc.right;
+                if (tblPr.bidiVisual == null) tblPr.bidiVisual = new NPOI.OpenXmlFormats.Wordprocessing.CT_OnOff();
+                tblPr.bidiVisual.val = true;
+
+                void AddHeaderRow(string col1, string col2)
+                {
+                    NPOI.XWPF.UserModel.XWPFTableRow row;
+                    if (table.Rows.Count == 1 && 
+                        (table.GetRow(0).GetCell(0) == null || string.IsNullOrEmpty(table.GetRow(0).GetCell(0).GetText())) &&
+                        (table.GetRow(0).GetCell(1) == null || string.IsNullOrEmpty(table.GetRow(0).GetCell(1).GetText())))
+                    {
+                        row = table.GetRow(0);
+                        if (row.GetCell(1) == null) row.CreateCell();
+                    }
+                    else
+                    {
+                        row = table.CreateRow();
+                    }
+
+                    var cell0 = row.GetCell(0);
+                    var cell1 = row.GetCell(1);
+
+                    void StyleHeaderCell(NPOI.XWPF.UserModel.XWPFTableCell cell, string text)
+                    {
+                        cell.SetColor("DCE6F1"); // Styled light header blue
+                        var p = cell.Paragraphs[0];
+                        p.Alignment = ParagraphAlignment.RIGHT;
+                        var ctp = p.GetCTP();
+                        var pPr = ctp.IsSetPPr() ? ctp.pPr : ctp.AddNewPPr();
+                        if (pPr.bidi == null) pPr.bidi = new NPOI.OpenXmlFormats.Wordprocessing.CT_OnOff();
+
+                        var r = p.CreateRun();
+                        r.SetText(SanitizeXmlString(text));
+                        r.FontFamily = "Arial";
+                        r.FontSize = 11;
+                        r.IsBold = true;
+                        r.SetColor("1A365D");
+                    }
+
+                    StyleHeaderCell(cell0, col1);
+                    StyleHeaderCell(cell1, col2);
+                }
+
+                void AddTableRow(string label, string val)
+                {
+                    NPOI.XWPF.UserModel.XWPFTableRow row;
+                    if (table.Rows.Count == 1 && 
+                        (table.GetRow(0).GetCell(0) == null || string.IsNullOrEmpty(table.GetRow(0).GetCell(0).GetText())) &&
+                        (table.GetRow(0).GetCell(1) == null || string.IsNullOrEmpty(table.GetRow(0).GetCell(1).GetText())))
+                    {
+                        row = table.GetRow(0);
+                        if (row.GetCell(1) == null) row.CreateCell();
+                    }
+                    else
+                    {
+                        row = table.CreateRow();
+                    }
+
+                    var cellLabel = row.GetCell(0);
+                    var cellVal = row.GetCell(1);
+
+                    // Label cell (RTL, Right-aligned)
+                    var pLabel = cellLabel.Paragraphs[0];
+                    pLabel.Alignment = ParagraphAlignment.RIGHT;
+                    var ctpLabel = pLabel.GetCTP();
+                    var pPrLabel = ctpLabel.IsSetPPr() ? ctpLabel.pPr : ctpLabel.AddNewPPr();
+                    if (pPrLabel.bidi == null) pPrLabel.bidi = new NPOI.OpenXmlFormats.Wordprocessing.CT_OnOff();
+
+                    var rLabel = pLabel.CreateRun();
+                    rLabel.SetText(SanitizeXmlString(label));
+                    rLabel.FontFamily = "Arial";
+                    rLabel.FontSize = 11;
+                    rLabel.IsBold = true;
+
+                    // Content cell (LTR, Left-aligned for English, RTL/Right for placeholder)
+                    var pVal = cellVal.Paragraphs[0];
+                    if (string.IsNullOrWhiteSpace(val))
+                    {
+                        pVal.Alignment = ParagraphAlignment.RIGHT;
+                        var ctpVal = pVal.GetCTP();
+                        var pPrVal = ctpVal.IsSetPPr() ? ctpVal.pPr : ctpVal.AddNewPPr();
+                        if (pPrVal.bidi == null) pPrVal.bidi = new NPOI.OpenXmlFormats.Wordprocessing.CT_OnOff();
+
+                        var rVal = pVal.CreateRun();
+                        rVal.SetText(SanitizeXmlString("(חלק זה טרם הושלם בתרגול)"));
+                        rVal.FontFamily = "Arial";
+                        rVal.FontSize = 10;
+                        rVal.IsItalic = true;
+                        rVal.SetColor("888888");
+                    }
+                    else
+                    {
+                        pVal.Alignment = ParagraphAlignment.LEFT;
+                        
+                        var rVal = pVal.CreateRun();
+                        rVal.SetText(SanitizeXmlString(val));
+                        rVal.FontFamily = "Arial";
+                        rVal.FontSize = 11;
+                        rVal.SetColor("000000");
+                    }
+                }
+
+                // Combine student scripts for each phase
+                var openingParts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(presentation.SelfIntroduction)) openingParts.Add(presentation.SelfIntroduction);
+                if (!string.IsNullOrWhiteSpace(presentation.Hook)) openingParts.Add(presentation.Hook);
+                if (!string.IsNullOrWhiteSpace(presentation.Transition)) openingParts.Add(presentation.Transition);
+                string openingCombined = string.Join(" ", openingParts);
+
+                var bodyParts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(presentation.MainIdea1)) bodyParts.Add(presentation.MainIdea1);
+                if (!string.IsNullOrWhiteSpace(presentation.Explanation1)) bodyParts.Add(presentation.Explanation1);
+                if (!string.IsNullOrWhiteSpace(presentation.MainIdea2)) bodyParts.Add(presentation.MainIdea2);
+                if (!string.IsNullOrWhiteSpace(presentation.Explanation2)) bodyParts.Add(presentation.Explanation2);
+                string bodyCombined = string.Join(" ", bodyParts);
+
+                var conclusionParts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(presentation.Recap)) conclusionParts.Add(presentation.Recap);
+                if (!string.IsNullOrWhiteSpace(presentation.Takeaway)) conclusionParts.Add(presentation.Takeaway);
+                string conclusionCombined = string.Join(" ", conclusionParts);
+
+                // Assemble Worksheet Table
+                AddHeaderRow("החלק בפרזנטציה", "מה להגיד באנגלית");
+
+                AddTableRow("פתיחה (Opening)", openingCombined);
+                AddTableRow("גוף ההרצאה (Body)", bodyCombined);
+                AddTableRow("סיכום (Conclusion)", conclusionCombined);
+
+                // Checklist Logic (Detailed Pedagogical Evaluation)
+                var missingParts = new List<string>();
+
+                // 1. Opening Phase Evaluation
+                bool missingSelf = string.IsNullOrWhiteSpace(presentation.SelfIntroduction);
+                bool missingHook = string.IsNullOrWhiteSpace(presentation.Hook);
+                bool missingTrans = string.IsNullOrWhiteSpace(presentation.Transition);
+                if (missingSelf && missingHook && missingTrans)
+                {
+                    missingParts.Add("פתיחה");
+                }
+                else
+                {
+                    if (missingSelf) missingParts.Add("הצגה עצמית קצרה");
+                    if (missingHook) missingParts.Add("משפט פתיחה שמושך קשב");
+                    if (missingTrans) missingParts.Add("משפט מעבר לגוף ההרצאה");
+                }
+
+                // 2. Body Phase Evaluation
+                bool missingMain1 = string.IsNullOrWhiteSpace(presentation.MainIdea1);
+                bool missingExp1 = string.IsNullOrWhiteSpace(presentation.Explanation1);
+                bool missingMain2 = string.IsNullOrWhiteSpace(presentation.MainIdea2);
+                bool missingExp2 = string.IsNullOrWhiteSpace(presentation.Explanation2);
+                if (missingMain1 && missingExp1 && missingMain2 && missingExp2)
+                {
+                    missingParts.Add("גוף ההרצאה");
+                }
+                else
+                {
+                    if (missingMain1) missingParts.Add("רעיון מרכזי ראשון");
+                    if (missingExp1) missingParts.Add("הסבר או דוגמה לרעיון הראשון");
+                    if (missingMain2) missingParts.Add("רעיון מרכזי שני");
+                    if (missingExp2) missingParts.Add("הסבר או דוגמה לרעיון השני");
+                }
+
+                // 3. Conclusion Phase Evaluation
+                bool missingRecap = string.IsNullOrWhiteSpace(presentation.Recap);
+                bool missingTakeaway = string.IsNullOrWhiteSpace(presentation.Takeaway);
+                if (missingRecap && missingTakeaway)
+                {
+                    missingParts.Add("סיכום");
+                }
+                else
+                {
+                    if (missingRecap) missingParts.Add("סיכום קצר של הרעיון המרכזי");
+                    if (missingTakeaway) missingParts.Add("משפט מסכם לקהל");
+                }
+
+                if (missingParts.Any())
+                {
+                    AddEmptyLine();
+
+                    // Checklist Title
+                    var pChecklistTitle = doc.CreateParagraph();
+                    pChecklistTitle.Alignment = ParagraphAlignment.RIGHT;
+                    var ctpChecklistTitle = pChecklistTitle.GetCTP();
+                    var pPrChecklistTitle = ctpChecklistTitle.IsSetPPr() ? ctpChecklistTitle.pPr : ctpChecklistTitle.AddNewPPr();
+                    if (pPrChecklistTitle.bidi == null) pPrChecklistTitle.bidi = new NPOI.OpenXmlFormats.Wordprocessing.CT_OnOff();
+
+                    var rChecklistTitle = pChecklistTitle.CreateRun();
+                    rChecklistTitle.SetText(SanitizeXmlString("לפני ההצגה ודאו שיש גם את החלקים הבאים בפרזנטציה"));
+                    rChecklistTitle.FontFamily = "Arial";
+                    rChecklistTitle.FontSize = 12;
+                    rChecklistTitle.IsBold = true;
+                    rChecklistTitle.SetColor("1A365D");
+
+                    foreach (var part in missingParts)
+                    {
+                        var pPart = doc.CreateParagraph();
+                        pPart.Alignment = ParagraphAlignment.RIGHT;
+                        var ctpPart = pPart.GetCTP();
+                        var pPrPart = ctpPart.IsSetPPr() ? ctpPart.pPr : ctpPart.AddNewPPr();
+                        if (pPrPart.bidi == null) pPrPart.bidi = new NPOI.OpenXmlFormats.Wordprocessing.CT_OnOff();
+
+                        var rPart = pPart.CreateRun();
+                        rPart.SetText(SanitizeXmlString(part));
+                        rPart.FontFamily = "Arial";
+                        rPart.FontSize = 11;
+                        rPart.SetColor("4A5568");
+                    }
+                }
+
+                doc.Write(outStream);
+            }
+            return outStream.ToArray();
+        }
+
+        private string SanitizeXmlString(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            var sb = new StringBuilder();
+            foreach (var c in value)
+            {
+                if (c == 0x19)
+                {
+                    sb.Append('\'');
+                    continue;
+                }
+
+                if (c == 0x9 || c == 0xA || c == 0xD || 
+                    (c >= 0x20 && c <= 0xD7FF) || 
+                    (c >= 0xE000 && c <= 0xFFFD))
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
+
+        private AiAnalysisResult SafeDeserializeAiAnalysis(string aiAnalysisJson)
+        {
+            if (string.IsNullOrEmpty(aiAnalysisJson)) return null;
+            try
+            {
+                return JsonSerializer.Deserialize<AiAnalysisResult>(aiAnalysisJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deserializing AiAnalysisJson: {ex.Message}");
+                return null;
+            }
+        }
+
+        private async Task<ExtractedPresentation> ExtractPresentationFromHistory(string chatHistoryJson)
+        {
+            var presentation = new ExtractedPresentation();
+            var messages = new List<Message>();
+            if (!string.IsNullOrEmpty(chatHistoryJson))
+            {
+                try
+                {
+                    messages = JsonSerializer.Deserialize<List<Message>>(chatHistoryJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Message>();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error parsing chat history JSON: {ex.Message}");
+                }
+            }
+
+            var openingUserMessages = messages.Where(m => m.role == "user" && m.Phase == 2).Select(m => m.content).ToList();
+            var bodyUserMessages = messages.Where(m => m.role == "user" && m.Phase == 3).Select(m => m.content).ToList();
+            var conclusionUserMessages = messages.Where(m => m.role == "user" && m.Phase == 4).Select(m => m.content).ToList();
+
+            if (openingUserMessages.Any())
+            {
+                try
+                {
+                    var extractedOpening = await ExtractOpeningPhase(openingUserMessages);
+                    if (extractedOpening != null)
+                    {
+                        presentation.SelfIntroduction = extractedOpening.selfIntroduction;
+                        presentation.Hook = extractedOpening.hook;
+                        presentation.Transition = extractedOpening.transition;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error extracting opening phase: {ex.Message}");
+                }
+            }
+
+            if (bodyUserMessages.Any())
+            {
+                try
+                {
+                    var extractedBody = await ExtractBodyPhase(bodyUserMessages);
+                    if (extractedBody != null)
+                    {
+                        presentation.MainIdea1 = extractedBody.mainIdea1;
+                        presentation.Explanation1 = extractedBody.explanation1;
+                        presentation.MainIdea2 = extractedBody.mainIdea2;
+                        presentation.Explanation2 = extractedBody.explanation2;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error extracting body phase: {ex.Message}");
+                }
+            }
+
+            if (conclusionUserMessages.Any())
+            {
+                try
+                {
+                    var extractedConclusion = await ExtractConclusionPhase(conclusionUserMessages);
+                    if (extractedConclusion != null)
+                    {
+                        presentation.Recap = extractedConclusion.recap;
+                        presentation.Takeaway = extractedConclusion.takeaway;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error extracting conclusion phase: {ex.Message}");
+                }
+            }
+
+            return presentation;
+        }
+
+        private async Task<ExtractedOpening> ExtractOpeningPhase(List<string> messages)
+        {
+            string structuredInputJson = JsonSerializer.Serialize(messages);
+            var requestBody = new
+            {
+                model = _model,
+                messages = new[]
+                {
+                    new {
+                        role = "system",
+                        content = @"You are a precise data extraction assistant that acts as a careful classifier and light editor, not a writer.
+Analyze the provided JSON array containing student messages written during the Opening phase of their presentation.
+Your task is to extract and classify the sentences, phrases, or ideas that the student wrote for their TED-style presentation opening.
+
+CRITICAL SOURCE & CONTENT RULES:
+- Use ONLY the student messages provided in the input JSON array.
+- Never use assistant/TedFriend messages.
+- Do NOT invent new ideas or facts the student did not write.
+- Do NOT complete missing sections.
+- Do NOT rewrite or make the English vocabulary/grammar more advanced than the student's original level.
+- Each extracted section must be a short, complete, coherent presentation paragraph or complete sentence.
+- Do NOT include half-sentences, isolated fragments that do not stand alone, or unrelated chat text.
+- Do NOT include conversational filler like ""maybe"", ""I think"", ""I want"", ""אני חושבת שזה מספיק"", or meta-conversation about the task (e.g. ""I think that's enough"").
+- Remove filler words only when they are not needed. Keep the student's meaning and level.
+
+FUNCTIONAL CLASSIFICATION RULES:
+
+1. Self-introduction (selfIntroduction):
+- Classify sentences greeting the audience, stating their name, or introducing their topic (e.g., ""Hi, my name is..."", ""Hello, I am..."", ""My name is..."", ""I'm..."", ""Today I want to talk about..."", ""I would like to talk about..."", ""My topic is..."").
+- If the student writes one long sentence that includes name + topic + another idea, extract ONLY the name/topic part for Self-introduction.
+
+2. Hook (hook):
+- Classify sentences designed to capture the audience's attention (e.g., questions like ""Did you know that...?"" / ""Have you ever thought about...?"", surprising facts, short interesting statements, curiosity-inducing sentences).
+- Do NOT put a self-introduction sentence in Hook.
+- Do NOT repeat the same idea from Self-introduction.
+- Do NOT place a standalone question into the final script unless it is clearly usable as a presentation hook. If a question is unclear, incomplete, or not suitable, leave this field empty.
+
+3. Transition (transition):
+- Classify sentences that move from the opening to the body, usually stating what the speaker will explain next (e.g., ""Now I will explain why..."", ""Let’s look at two reasons why..."", ""First, I will talk about..."", ""Now I want to tell you about my first idea"").
+- Do NOT create a transition if the student did not write one.
+- Do NOT use the topic sentence again as Transition.
+- Do NOT repeat Self-introduction or Hook as Transition.
+
+DUPLICATE HANDLING RULES:
+- Do NOT repeat the same student sentence or core idea in more than one field.
+- If one student sentence contains multiple parts, split it into the best matching fields.
+- If a field already uses a sentence or idea, do not reuse it in another field.
+- If a sentence could fit more than one field, assign it to the single best matching field, and leave the other empty/null.
+
+FALLBACK RULE:
+- If you cannot extract a clean, complete, relevant sentence or short paragraph from the correct phase, return an empty value (null or empty string) for that field. It is better to leave the field empty than to include low-quality, incomplete, or unrelated text.
+
+Return ONLY a JSON object with these exact keys:
+- selfIntroduction
+- hook
+- transition"
+                    },
+                    new {
+                        role = "user",
+                        content = $"Extract the opening from this messages JSON: {structuredInputJson}"
+                    }
+                },
+                temperature = 0.0,
+                response_format = new { type = "json_object" }
+            };
+
+            var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", requestBody);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"OpenAI opening extraction failed: {response.ReasonPhrase}");
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+            var jsonContent = result.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+
+            return JsonSerializer.Deserialize<ExtractedOpening>(jsonContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+
+        private async Task<ExtractedBody> ExtractBodyPhase(List<string> messages)
+        {
+            string structuredInputJson = JsonSerializer.Serialize(messages);
+            var requestBody = new
+            {
+                model = _model,
+                messages = new[]
+                {
+                    new {
+                        role = "system",
+                        content = @"You are a precise data extraction assistant that acts as a careful classifier and light editor, not a writer.
+Analyze the provided JSON array containing student messages written during the Body phase of their presentation.
+Your task is to extract and classify the sentences, phrases, or ideas that the student wrote for their TED-style presentation body.
+
+CRITICAL SOURCE & CONTENT RULES:
+- Use ONLY the student messages provided in the input JSON array.
+- Never use assistant/TedFriend messages.
+- Do NOT invent new ideas or facts the student did not write.
+- Do NOT complete missing sections.
+- Do NOT rewrite or make the English vocabulary/grammar more advanced than the student's original level.
+- Each extracted section must be a short, complete, coherent presentation paragraph or complete sentence.
+- Do NOT include half-sentences, isolated fragments that do not stand alone, or unrelated chat text.
+- Do NOT include conversational filler like ""maybe"", ""I think"", ""I want"", ""אני חושבת שזה מספיק"", or meta-conversation about the task (e.g. ""I think that's enough"").
+- Remove filler words only when they are not needed. Keep the student's meaning and level.
+
+FUNCTIONAL CLASSIFICATION RULES:
+
+1. Main Idea 1 (mainIdea1) / Main Idea 2 (mainIdea2):
+- Classify central reasons, claims, or points about the topic (e.g., ""Music helps people feel happy"", ""Music is important because it connects people"").
+- If there is only one body idea in the messages, fill ONLY Main Idea 1 and leave Main Idea 2 empty/null.
+- Do NOT place a standalone question into the final script. If a question is unclear, incomplete, or not suitable, leave this field empty.
+
+2. Explanation / Example (explanation1 for Main Idea 1, explanation2 for Main Idea 2):
+- Classify details, context, or examples that expand on a main idea (e.g., ""For example, I listen to music when I am sad"", ""When people sing together, they feel connected"").
+- Do NOT put the same sentence in both Main Idea and Example.
+- Do NOT place a standalone question into the final script. If a question is unclear, incomplete, or not suitable, leave this field empty.
+
+DUPLICATE HANDLING RULES:
+- Do NOT repeat the same student sentence or core idea in more than one field.
+- If one student sentence contains multiple parts, split it into the best matching fields.
+- If a field already uses a sentence or idea, do not reuse it in another field.
+- If a sentence could fit more than one field, assign it to the single best matching field, and leave the other empty/null.
+
+FALLBACK RULE:
+- If you cannot extract a clean, complete, relevant sentence or short paragraph from the correct phase, return an empty value (null or empty string) for that field. It is better to leave the field empty than to include low-quality, incomplete, or unrelated text.
+
+Return ONLY a JSON object with these exact keys:
+- mainIdea1
+- explanation1
+- mainIdea2
+- explanation2"
+                    },
+                    new {
+                        role = "user",
+                        content = $"Extract the body from this messages JSON: {structuredInputJson}"
+                    }
+                },
+                temperature = 0.0,
+                response_format = new { type = "json_object" }
+            };
+
+            var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", requestBody);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"OpenAI body extraction failed: {response.ReasonPhrase}");
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+            var jsonContent = result.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+
+            return JsonSerializer.Deserialize<ExtractedBody>(jsonContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+
+        private async Task<ExtractedConclusion> ExtractConclusionPhase(List<string> messages)
+        {
+            string structuredInputJson = JsonSerializer.Serialize(messages);
+            var requestBody = new
+            {
+                model = _model,
+                messages = new[]
+                {
+                    new {
+                        role = "system",
+                        content = @"You are a precise data extraction assistant that acts as a careful classifier and light editor, not a writer.
+Analyze the provided JSON array containing student messages written during the Conclusion phase of their presentation.
+Your task is to extract and classify the sentences, phrases, or ideas that the student wrote for their TED-style presentation conclusion.
+
+CRITICAL SOURCE & CONTENT RULES:
+- Use ONLY the student messages provided in the input JSON array.
+- Never use assistant/TedFriend messages.
+- Do NOT invent new ideas or facts the student did not write.
+- Do NOT complete missing sections.
+- Do NOT rewrite or make the English vocabulary/grammar more advanced than the student's original level.
+- Each extracted section must be a short, complete, coherent presentation paragraph or complete sentence.
+- Do NOT include half-sentences, isolated fragments that do not stand alone, or unrelated chat text.
+- Do NOT include conversational filler like ""maybe"", ""I think"", ""I want"", ""אני חושבת שזה מספיק"", or meta-conversation about the task (e.g. ""I think that's enough"").
+- Remove filler words only when they are not needed. Keep the student's meaning and level.
+
+FUNCTIONAL CLASSIFICATION RULES:
+
+1. Recap (recap):
+- Classify sentences repeating the main ideas in a short way (e.g., ""To sum up, music is important in our lives"", ""In conclusion, music can help people feel better"", ""Today I talked about why music matters"").
+- Do NOT place a standalone question into the final script. If a question is unclear, incomplete, or not suitable, leave this field empty.
+
+2. Final Message (takeaway):
+- Classify the last sentence to the audience (e.g., ""Thank you for listening"", ""I hope you enjoyed my presentation"", ""Next time you listen to music, think about how it makes you feel"").
+- Do NOT place a standalone question into the final script. If a question is unclear, incomplete, or not suitable, leave this field empty.
+
+DUPLICATE HANDLING RULES:
+- Do NOT repeat the same student sentence or core idea in more than one field.
+- If one student sentence contains multiple parts, split it into the best matching fields.
+- If a field already uses a sentence or idea, do not reuse it in another field.
+- If a sentence could fit more than one field, assign it to the single best matching field, and leave the other empty/null.
+
+FALLBACK RULE:
+- If you cannot extract a clean, complete, relevant sentence or short paragraph from the correct phase, return an empty value (null or empty string) for that field. It is better to leave the field empty than to include low-quality, incomplete, or unrelated text.
+
+Return ONLY a JSON object with these exact keys:
+- recap
+- takeaway"
+                    },
+                    new {
+                        role = "user",
+                        content = $"Extract the conclusion from this messages JSON: {structuredInputJson}"
+                    }
+                },
+                temperature = 0.0,
+                response_format = new { type = "json_object" }
+            };
+
+            var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", requestBody);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"OpenAI conclusion extraction failed: {response.ReasonPhrase}");
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+            var jsonContent = result.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+
+            return JsonSerializer.Deserialize<ExtractedConclusion>(jsonContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+
+        private class ExtractedOpening
+        {
+            public string selfIntroduction { get; set; }
+            public string hook { get; set; }
+            public string transition { get; set; }
+        }
+
+        private class ExtractedBody
+        {
+            public string mainIdea1 { get; set; }
+            public string explanation1 { get; set; }
+            public string mainIdea2 { get; set; }
+            public string explanation2 { get; set; }
+        }
+
+        private class ExtractedConclusion
+        {
+            public string recap { get; set; }
+            public string takeaway { get; set; }
+        }
+
+        private class ExportSessionDetails
+        {
+            public int Id { get; set; }
+            public int UserId { get; set; }
+            public string Topic { get; set; }
+            public string ChatHistory { get; set; }
+            public int? FluencyScore { get; set; }
+            public int? GrammarScore { get; set; }
+            public string AiAnalysisJson { get; set; }
+            public int? NeedsHelpScore { get; set; }
+            public string FreeTextComment { get; set; }
+            public string StudentName { get; set; }
+            public int? TeacherId { get; set; }
+        }
+
+        private class ExtractedPresentation
+        {
+            public string SelfIntroduction { get; set; }
+            public string Hook { get; set; }
+            public string Transition { get; set; }
+            public string MainIdea1 { get; set; }
+            public string Explanation1 { get; set; }
+            public string MainIdea2 { get; set; }
+            public string Explanation2 { get; set; }
+            public string Recap { get; set; }
+            public string Takeaway { get; set; }
+        }
+
         #endregion
         
        #region פונקציות עזר פנימיות (Helper Methods)
